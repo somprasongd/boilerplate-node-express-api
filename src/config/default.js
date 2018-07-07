@@ -1,4 +1,5 @@
 module.exports = {
-  port: undefined,
-  corsOptions: undefined,
+  PORT: undefined,
+  DB_URI: undefined,
+  CORS_OPTIONS: undefined,
 }
