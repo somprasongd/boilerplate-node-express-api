@@ -51,9 +51,10 @@ export default (app) => {
     winston.add(new winston.transports.Console({
       level: 'error',
       handleExceptions: true,
-      format: winston.format.simple(),
-      colorize: true,
-      prettyPrint: true,
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
     }));
     return;
   }
@@ -63,8 +64,9 @@ export default (app) => {
   winston.add(new winston.transports.Console({
     level: 'debug',
     handleExceptions: true,
-    format: winston.format.simple(),
-    colorize: true,
-    prettyPrint: true,
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.simple()
+    )
   }));
 }
