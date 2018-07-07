@@ -20,26 +20,50 @@ export default (app) => {
     // handle uncaught exception
     winston.exceptions.handle(
       new winston.transports.File({
-        filename: 'logs/uncaughtExceptions.log'
+        filename: 'logs/uncaughtExceptions.log',
+        format: winston.format.json(),
       })
     );
 
+    // Write all logs error (and below) to `error.log`.
     winston.add(new winston.transports.File({
-      level: 'info',
-      filename: `logs/app.log`,
-      handleExceptions: true,
-      json: true,
+      level: 'error',
+      filename: `logs/error.log`,
+      handleExceptions: false,
+      format: winston.format.json(),
       maxsize: 5242880, // 5MB
       maxFiles: 5,
       colorize: false,
     }));
+
+    // Write to all logs with level `info` and below to `combined.log` 
+    winston.add(new winston.transports.File({
+      level: 'info',
+      filename: `logs/combined.log`,
+      handleExceptions: false,
+      format: winston.format.json(),
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+      colorize: false,
+    }));
+
+    //  Write all logs error (and below) to console
+    winston.add(new winston.transports.Console({
+      level: 'error',
+      handleExceptions: true,
+      format: winston.format.simple(),
+      colorize: true,
+      prettyPrint: true,
+    }));
     return;
   }
 
+  // If we're not in production then log to the `console` with the format:
+  // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
   winston.add(new winston.transports.Console({
     level: 'debug',
     handleExceptions: true,
-    json: false,
+    format: winston.format.simple(),
     colorize: true,
     prettyPrint: true,
   }));

@@ -1,6 +1,11 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
+import Joi from 'joi';
+import joiObjectId from 'joi-objectid';
+
+// create Joi.objectId() to validate mongodb OjectId
+Joi.objectId = joiObjectId(Joi);
 
 export const apiRouter = express.Router()
 

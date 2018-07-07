@@ -1,7 +1,5 @@
 import petService from './pets.service';
-import Pet from '../../../model/pet';
-
-
+import Pet from '../../model/pet';
 
 export default {
   async create(req, res) {
@@ -9,7 +7,6 @@ export default {
     if (error) {
       return res.status(400).json(error);
     }
-
     const pet = await Pet.create(value); // (Object.assign({}, value, { onwer: req.user._id }));
     return res.json(pet);
   },
