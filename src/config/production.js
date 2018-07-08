@@ -3,6 +3,7 @@ const whitelist = ['http://example1.com', 'http://example2.com'];
 module.exports = {
   PORT: process.env.PORT,
   DB_URI: process.env.DB_URI,
+  JWT_SECRET: process.env.JWT_SECRET,
   CORS_OPTIONS: {
     origin: function (origin, callback) {
       if (whitelist.indexOf(origin) !== -1) {

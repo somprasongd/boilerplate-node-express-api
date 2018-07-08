@@ -1,6 +1,6 @@
 import 'express-async-errors';
-import swaggerUi from 'swagger-ui-express';
 import winston from 'winston';
+import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../config/swagger.json';
 import { apiRouter } from '../api';
 
@@ -9,9 +9,9 @@ export default (app) => {
   // api
   app.use('/api', apiRouter);
 
-  // documentation with swagger
-  app.use(
-    '/',
+  // documentation with swagger in dev mode only
+  app.get('env') === 'development' &&  app.use(
+    '/api-docs',
     swaggerUi.serve,
     swaggerUi.setup(swaggerDocument, {
       explorer: true,

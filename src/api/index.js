@@ -13,7 +13,6 @@ const PATH = path.join(__dirname, 'resources');
 fs
   .readdirSync(PATH)
   .filter((file) => {
-    // fs.statSync(path.join(__dirname, file)).isDirectory()
     return (file.indexOf('.') !== 0) && (file !== 'index.js')
   })
   .forEach((feature) => {

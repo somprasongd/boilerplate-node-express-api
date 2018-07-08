@@ -1,5 +1,5 @@
 import petService from './pets.service';
-import Pet from '../../model/pet';
+import Pet from '../../models/demo-pet-pagination';
 
 export default {
   async create(req, res) {

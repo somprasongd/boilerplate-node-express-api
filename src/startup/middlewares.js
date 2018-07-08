@@ -7,11 +7,8 @@ import config from '../config';
 export default (app) => {
   // use middlewares
   app.use(cors(config.corsOptions));
-  app.use(helmet());
+  app.get('env') === 'production' && app.use(helmet());
   app.use(express.json()); // parse application/json
   app.use(express.urlencoded({ extended: true })); // parse application/x-www-form-urlencoded
-  if (app.get('env') === 'development') {
-    app.use(morgan('dev'));
-  }  
+  app.get('env') === 'development' && app.use(morgan('dev'));
 }
-
