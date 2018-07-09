@@ -5,9 +5,9 @@ import middlewares from './middlewares';
 import routes from './routes';
 
 export default app => {
-  logging(app);
-  config();
-  db();
-  middlewares(app);
-  routes(app);
+  logging(app); // setup winston log
+  config(); // validate config
+  db(); // connect to db
+  middlewares(app); // handle middlewares
+  routes(app); // handle routes
 };

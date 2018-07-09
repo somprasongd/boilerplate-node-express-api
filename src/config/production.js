@@ -1,7 +1,12 @@
+import dotenv from 'dotenv';
+
+// read environtment variables from .env file to process.env
+dotenv.config();
+
 const whitelist = ['http://example1.com', 'http://example2.com'];
 
-module.exports = {
-  PORT: process.env.PORT,
+export default {
+  PORT: process.env.PORT || 3000,
   DB_URI: process.env.DB_URI,
   JWT_SECRET: process.env.JWT_SECRET,
   CORS_OPTIONS: {

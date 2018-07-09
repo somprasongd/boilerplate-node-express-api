@@ -1,7 +1,7 @@
 import 'express-async-errors';
 import winston from 'winston';
 import swaggerUi from 'swagger-ui-express';
-import swaggerDocument from '../config/swagger.json';
+import swaggerDocument from '../doc/swagger.json';
 import { apiRouter } from '../api';
 
 export default app => {

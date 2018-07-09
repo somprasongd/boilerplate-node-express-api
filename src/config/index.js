@@ -1,5 +1,11 @@
-process.env.NODE_CONFIG_DIR = __dirname;
-require('dotenv').config();
-const config = require('config');
+import development from './development';
+import production from './production';
 
-module.exports = { ...config };
+const config = {
+  development,
+  production,
+};
+
+const env = process.env.NODE_ENV || 'development';
+
+export default config[env];

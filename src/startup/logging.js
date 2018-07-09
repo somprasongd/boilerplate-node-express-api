@@ -1,15 +1,8 @@
 import winston from 'winston';
 
 export default app => {
-  // handle uncaught exception
-  // process.on('uncaughtException', (ex) => {
-  //   console.log('WE GOT AN UNCAUGHT EXCEPTION');
-  //   winston.error(ex.message, ex);
-  // });
-
   // handle unhandled rejection
   process.on('unhandledRejection', ex => {
-    // console.log('WE GOT AN UNHANDLED REJECTION');
     throw ex;
   });
 
@@ -61,8 +54,7 @@ export default app => {
     return;
   }
 
-  // If we're not in production then log to the `console` with the format:
-  // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
+  // If we're not in production then log to the `console`
   winston.add(
     new winston.transports.Console({
       level: 'debug',
