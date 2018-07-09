@@ -1,7 +1,5 @@
-import mongoose from 'mongoose';
-
 export default (req, res, next) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).send('Invalid ID.');
-
+  const reg = new RegExp('^[0-9]+$');
+  if (!reg.test(req.params.id)) return res.status(404).send('Invalid ID.');
   next();
 };
