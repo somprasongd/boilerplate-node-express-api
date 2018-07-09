@@ -1,12 +1,9 @@
-import mongoose from 'mongoose';
+// import package here
 import winston from 'winston';
 import config from '../config';
 
 export default () => {
-  mongoose
-    .connect(
-      config.DB_URI,
-      { useNewUrlParser: true }
-    )
-    .then(() => winston.info('Connected to MongoDB...'));
+  // add connection code here
+  // connect to config.DB_URI
+  // log status with winston
 };

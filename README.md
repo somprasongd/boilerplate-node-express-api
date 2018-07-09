@@ -28,8 +28,8 @@ export default {
 ```javascript
 // ./src/startup/db.js
 // import package here
-import winston from "winston";
-import config from "../config";
+import winston from 'winston';
+import config from '../config';
 
 export default () => {
   // add connection code here
@@ -102,42 +102,42 @@ function validateBody(body) {
 // import Model here
 import paginate from "../helpers/paginate";
 
-export const create = async (req, res) {
-  const data = await new Promise.resolve({}); // insert
+export const create = async (req, res) => {
+  const data = await Promise.resolve({}); // insert
   return res.json(data);
 };
 
-export const findAll = async (req, res) {
+export const findAll = async (req, res) => {
   const { limit, offset, page } = req.query;
-  let datas = new Promise.resolve({}); // query with offset and limit
-  let counts = new Promise.resolve({}); // count with same query criteria
+  let datas = await Promise.resolve({}); // query with offset and limit
+  let counts = await Promise.resolve({}); // count with same query criteria
   [datas, counts] = await Promise.all([datas, counts]);
   const results = paginate(datas, counts, limit, offset, page);
   res.send(results);
-}
+};
 
-export const findOne = async (req, res) {
+export const findOne = async (req, res) => {
   const { id } = req.params;
-  const data = await new Promise.resolve({}); // find by id
+  const data = await Promise.resolve({}); // find by id
   if (!data) {
     return res.status(404).json({ err: "could not find data" });
   }
   return res.json(data);
-}
+};
 
-export const delete = async (req, res) {
+export const remove = async (req, res) => {
   const { id } = req.params;
-  const data = await  new Promise.resolve({}); // find by id and remove
+  const data = await Promise.resolve({}); // find by id and remove
   if (!data) {
     return res.status(404).json({ err: "could not find data" });
   }
   return res.json(data);
-}
+};
 
-export const update = async (req, res) {
+export const update = async (req, res) => {
   const { id } = req.params;
   // { new: true } is tell mongoose return updated object into pet
-  const data = await new Promise.resolve({}); // find by id and update and return update object
+  const data = await Promise.resolve({}); // find by id and update and return update object
   if (!data) {
     return res.status(404).json({ err: "could not find data" });
   }
