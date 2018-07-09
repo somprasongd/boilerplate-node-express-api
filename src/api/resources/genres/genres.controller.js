@@ -1,4 +1,5 @@
 import { Genre, validate } from '../../models/genre';
+import paginate from '../../helpers/paginate.js';
 
 export const create = async (req, res) => {
   const { error } = validate(req.body);
@@ -11,8 +12,15 @@ export const create = async (req, res) => {
 };
 
 export const findAll = async (req, res) => {
-  const genres = await Genre.find().sort('name');
-  res.send(genres);
+  const { limit, offset, page } = req.query;
+  let genres = Genre.find()
+    .sort('name')
+    .skip(offset)
+    .limit(limit);
+  let counts = Genre.count({}).exec();
+  [genres, counts] = await Promise.all([genres, counts]);
+  const results = paginate(genres, counts, limit, offset, page);
+  res.send(results);
 };
 
 export const findOne = async (req, res) => {
