@@ -1,7 +1,7 @@
 import express from 'express';
-import controller from './movies.controller';
-import validateObjectId from '../../middleware/validateObjectId';
-import auth from '../../middleware/auth';
+import * as controller from './movies.controller';
+import validateObjectId from '../../middlewares/validateObjectId';
+import auth from '../../middlewares/auth';
 
 export const router = express.Router();
 

@@ -4,19 +4,20 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../config/swagger.json';
 import { apiRouter } from '../api';
 
-export default (app) => {
-
+export default app => {
   // api
   app.use('/api', apiRouter);
 
   // documentation with swagger in dev mode only
-  app.get('env') === 'development' &&  app.use(
-    '/api-docs',
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerDocument, {
-      explorer: true,
-    })
-  );
+  if (app.get('env') === 'development') {
+    app.use(
+      '/api-docs',
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerDocument, {
+        explorer: true,
+      })
+    );
+  }
 
   // handle 404
   app.use((req, res, next) => {
@@ -37,4 +38,4 @@ export default (app) => {
       },
     });
   });
-}
+};

@@ -12,10 +12,10 @@ export const create = async (req, res) => {
     title: req.body.title,
     genre: {
       _id: genre._id,
-      name: genre.name
+      name: genre.name,
     },
     numberInStock: req.body.numberInStock,
-    dailyRentalRate: req.body.dailyRentalRate
+    dailyRentalRate: req.body.dailyRentalRate,
   });
   await movie.save();
 
@@ -50,16 +50,19 @@ export const update = async (req, res) => {
   const genre = await Genre.findById(req.body.genreId);
   if (!genre) return res.status(400).send('Invalid genre.');
 
-  const movie = await Movie.findByIdAndUpdate(req.params.id,
+  const movie = await Movie.findByIdAndUpdate(
+    req.params.id,
     {
       title: req.body.title,
       genre: {
         _id: genre._id,
-        name: genre.name
+        name: genre.name,
       },
       numberInStock: req.body.numberInStock,
-      dailyRentalRate: req.body.dailyRentalRate
-    }, { new: true });
+      dailyRentalRate: req.body.dailyRentalRate,
+    },
+    { new: true }
+  );
 
   if (!movie) return res.status(404).send('The movie with the given ID was not found.');
 

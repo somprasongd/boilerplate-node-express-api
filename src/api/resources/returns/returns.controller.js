@@ -1,30 +1,26 @@
-import Joi from 'joi';
-import bcrypt from 'bcrypt-nodejs';
-import { User } from '../../models/user';
+import { Rental } from '../../models/rental';
+import { Movie } from '../../models/movie';
 
-export const login = async (req, res) => {
-  const { error } = validate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+export const returnMovie = async (req, res) => {
+  const rental = await Rental.lookup(req.body.customerId, req.body.movieId);
 
-  let user = await User.findOne({ email: req.body.email });
-  if (!user) return res.status(400).send('Invalid email or password.');
+  if (!rental) return res.status(404).send('Rental not found.');
 
-  const validPassword = await bcrypt.compare(req.body.password, user.password);
-  if (!validPassword) return res.status(400).send('Invalid email or password.');
+  if (rental.dateReturned) return res.status(400).send('Return already processed.');
 
-  const token = user.generateAuthToken();
-  res.send(token);
+  rental.return();
+  await rental.save();
+
+  await Movie.update(
+    {
+      _id: rental.movie._id,
+    },
+    {
+      $inc: {
+        numberInStock: 1,
+      },
+    }
+  );
+
+  return res.send(rental);
 };
-
-export const logout = async (req, res) => {
-  res.send(true);
-};
-
-function validate(req) {
-  const schema = {
-    email: Joi.string().min(5).max(255).required().email(),
-    password: Joi.string().min(5).max(255).required()
-  };
-
-  return Joi.validate(req, schema);
-}

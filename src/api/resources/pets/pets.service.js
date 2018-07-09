@@ -21,5 +21,5 @@ export default {
       return { error };
     }
     return { value };
-  }
+  },
 };

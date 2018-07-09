@@ -10,5 +10,5 @@ startup(app);
 
 // start server
 app.listen(PORT, () => {
-  winston.info(`Server start on port ${PORT}`)
+  winston.info(`Server start on port ${PORT}`);
 });

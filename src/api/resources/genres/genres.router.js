@@ -1,7 +1,7 @@
 import express from 'express';
-import controller from './genres.controller';
-import validateObjectId from '../../middleware/validateObjectId';
-import auth from '../../middleware/auth';
+import * as controller from './genres.controller';
+import validateObjectId from '../../middlewares/validateObjectId';
+import auth from '../../middlewares/auth';
 import admin from '../../middlewares/admin';
 
 export const router = express.Router();

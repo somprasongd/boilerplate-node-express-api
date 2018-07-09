@@ -7,4 +7,4 @@ export default () => {
   if (!config.JWT_SECRET) {
     throw new Error('FATAL ERROR: JWT_SECRET is not defined.');
   }
-}
+};

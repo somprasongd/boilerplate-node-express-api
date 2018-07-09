@@ -1,7 +1,8 @@
 import express from 'express';
-import * as controller from './auth.controller';
+import * as controller from './users.controller';
+import auth from '../../middlewares/auth';
 
 export const router = express.Router();
 
-router.post('/login', controller.login);
-router.post('/logout', controller.logout);
+router.post('/', auth, controller.create);
+router.get('/me', auth, controller.findOne);

@@ -33,11 +33,11 @@ const petSchema = new Schema({
   tags: {
     type: Array,
     validate: {
-      validator: function (v) {
+      validator(v) {
         return v && v.length > 0;
       },
-      message: 'A pet should have at least one tag.'
-    },    
+      message: 'A pet should have at least one tag.',
+    },
   },
   isAlive: {
     type: Boolean,
@@ -49,7 +49,7 @@ const petSchema = new Schema({
   },
   prize: {
     type: Number,
-    required: function () {
+    required() {
       return this.isLost;
     },
     min: 0,
@@ -59,8 +59,8 @@ const petSchema = new Schema({
   },
   date: {
     type: Date,
-    default: Date.now()
-  }
+    default: Date.now(),
+  },
   // owner: {
   //   type: mongoose.Schema.Types.ObjectId,
   //   ref: 'User',

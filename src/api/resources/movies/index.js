@@ -1,1 +1,1 @@
-export { router } from './rentals.router';
+export { router } from './movies.router';

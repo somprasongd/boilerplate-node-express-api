@@ -9,8 +9,7 @@ export default (req, res, next) => {
     const decoded = jwt.verify(token, config.JWT_SECRET);
     req.user = decoded;
     next();
-  }
-  catch (ex) {
+  } catch (ex) {
     res.status(400).send('Invalid token.');
   }
-}
+};

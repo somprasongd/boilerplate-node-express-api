@@ -5,12 +5,12 @@ module.exports = {
   DB_URI: process.env.DB_URI,
   JWT_SECRET: process.env.JWT_SECRET,
   CORS_OPTIONS: {
-    origin: function (origin, callback) {
+    origin(origin, callback) {
       if (whitelist.indexOf(origin) !== -1) {
-        callback(null, true)
+        callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'))
+        callback(new Error('Not allowed by CORS'));
       }
-    }
+    },
   },
-}
+};
