@@ -4,7 +4,7 @@ Boilerplate APIs with express
 
 ## Folder Structure
 
-```
+```bash
 ./
 ----/dist # distributed source code
 ----/logs # collect log files in production mode
@@ -40,7 +40,7 @@ Boilerplate APIs with express
 
 - Or use this style.
 
-```
+```bash
 ./
 ----/src # development source code
 --------/api # api routes
