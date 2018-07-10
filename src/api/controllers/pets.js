@@ -1,55 +1,86 @@
-import * as Pet from '../models/pet';
-import paginate from '../helpers/paginate';
+import Fawn from 'fawn';
+import { Owner } from '../models/owner';
+import { Pet, validate } from '../models/pet';
+import { Category } from '../models/category';
+import paginate from '../helpers/paginate.js';
 
 export const create = async (req, res) => {
-  const { name, category, breed, age } = req.body;
-  const data = await Promise.resolve(Pet.create(name, category, breed, age)); // insert
-  return res.json(data);
+  const { error } = validate(req.body);
+
+  if (error) return res.status(400).json({ error: { message: error.details.map(detail => detail.message) } });
+
+  const category = await Category.findById(req.body.categoryId);
+  if (!category) return res.status(400).json({ error: { message: 'Invalid category.' } });
+
+  const pet = new Pet({
+    name: req.body.name,
+    category: {
+      _id: category._id,
+      name: category.name,
+    },
+    breed: req.body.breed,
+    age: req.body.age,
+    ownerId: req.body.ownerId,
+  });
+
+  const task = Fawn.Task();
+  task.save(Pet, pet);
+  task.update(Owner, { _id: pet.ownerId }, { $inc: { petCount: 1 } });
+  task.run({ useMongoose: true });
+  return res.json(pet);
 };
 
 export const findAll = async (req, res) => {
   const { limit, offset, page } = req.query;
-  // query with offset and limit
-  let datas = new Promise(resolve => resolve(Pet.findAll().slice(offset, limit + offset)));
-  // count with same query criteria
-  let counts = new Promise(resolve => resolve(Pet.findAll().length));
-  [datas, counts] = await Promise.all([datas, counts]);
-  const results = paginate(datas, counts, limit, offset, page);
+  let pets = await Pet.find()
+    .sort('name')
+    .skip(offset)
+    .limit(limit);
+  let counts = Pet.count({}).exec();
+  [pets, counts] = await Promise.all([pets, counts]);
+  const results = paginate(pets, counts, limit, offset, page);
   res.send(results);
 };
 
 export const findOne = async (req, res) => {
-  const { id } = req.params;
-  // find by id
-  const data = await Promise.resolve(Pet.findById(+id));
-  if (!data) {
-    return res.status(404).json({ err: 'could not find data' });
-  }
-  return res.json(data);
+  const pet = await Pet.findById(req.params.id);
+
+  if (!pet) return res.status(404).json({ error: { message: 'The pet with the given ID was not found.' } });
+
+  res.send(pet);
 };
 
 export const remove = async (req, res) => {
-  const { id } = req.params;
-  // find by id and remove
-  const user = await Promise.resolve(Pet.findById(+id));
-  if (!user) {
-    return res.status(404).json({ err: 'could not find data' });
-  }
-  const data = await Promise.resolve(Pet.remove(+id));
-  if (!data) {
-    return res.status(404).json({ err: 'could not find data' });
-  }
-  return res.json(data);
+  const pet = await Pet.findByIdAndRemove(req.params.id);
+
+  if (!pet) return res.status(404).json({ error: { message: 'The pet with the given ID was not found.' } });
+
+  res.send(pet);
 };
 
 export const update = async (req, res) => {
-  const { id } = req.params;
-  // find by id and update
-  const user = await Promise.resolve(Pet.findById(+id));
-  if (!user) {
-    return res.status(404).json({ err: 'could not find data' });
-  }
-  const { name, category, breed, age } = req.body;
-  const data = await Promise.resolve(Pet.update(id, name, category, breed, age));
-  return res.json(data);
+  const { error } = validate(req.body);
+  if (error) return res.status(400).json({ error: { message: error.details.map(detail => detail.message) } });
+
+  const category = await Category.findById(req.body.categoryId);
+  if (!category) return res.status(400).json({ error: { message: 'Invalid category.' } });
+
+  const pet = await Pet.findByIdAndUpdate(
+    req.params.id,
+    {
+      name: req.body.name,
+      category: {
+        _id: category._id,
+        name: category.name,
+      },
+      breed: req.body.breed,
+      age: req.body.age,
+      ownerId: req.user._id,
+    },
+    { new: true }
+  );
+
+  if (!pet) return res.status(404).json({ error: { message: 'The pet with the given ID was not found.' } });
+
+  res.send(pet);
 };

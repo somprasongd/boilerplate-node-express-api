@@ -1,6 +1,6 @@
-# boilerplate-node-express-api
+# Example with mongoose
 
-Boilerplate APIs with express
+Use mongoose to connect MongoDB
 
 ## Folder Structure
 
@@ -67,95 +67,99 @@ Boilerplate APIs with express
 
 ```javascript
 export default {
-  // connect to mongodb
-  DB_URI: "mongodb://username:password@host:port/database"
-  // or connect to postgresql
-  // DB_URL: 'postgres://username:password@host:port/database'
+  DB_URI: "mongodb://localhost/demo"
 };
 ```
 
 - In production mode set environtment to `appName_DB_URI`
 
-### Step 2: Connect to Database
+### Step 2: Connect to MongoDB
 
-- Install package such as `mongoose` or `pg-promise`: `npm i -S mongoose`
+- Install mongoose: `npm i -S mongoose`
 
-- Open file `./src/startup/db.js` and insert code following package document that you used:
+- Open file `./src/startup/db.js` and write code like this:
 
 ```javascript
 // ./src/startup/db.js
-// import package here
+import mongoose from "mongoose";
 import winston from "winston";
 import config from "../config";
 
 export default () => {
-  // add connection code here
-  // connect to config.DB_URI
-  // log status with winston
+  mongoose
+    .connect(
+      config.DB_URI,
+      { useNewUrlParser: true }
+    )
+    .then(() => winston.info("Connected to MongoDB..."));
 };
 ```
 
 ### Step 3: Create Model
 
-- Create new model in `./src/api/models`, if have ORM
+- Create new model in `./src/api/models`, Example pet.js to create Pet model with validators.
 
 ```javascript
-let pets = [
-  {
-    id: 1,
-    name: "admin",
-    category: "dog",
-    breed: "ไทย",
-    age: "senior"
+// ./src/api/models/pet.js
+import Joi from "joi";
+import mongoose from "mongoose";
+import { categorySchema } from "./category";
+
+const petSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, "Pet must have name"],
+    minlength: 2,
+    maxlength: 50
+    // match: /pattern/
   },
-  {
-    id: 2,
-    name: "tamp",
-    category: "dog",
-    breed: "ไทย - บางแก้ว",
-    age: "adult"
+  category: {
+    type: categorySchema,
+    required: true
   },
-  {
-    id: 3,
-    name: "snow",
-    category: "dog",
-    breed: "ไทย - บางแก้ว",
-    age: "adult"
+  breed: {
+    type: String,
+    required: [true, "Pet must have breed"]
+  },
+  age: {
+    type: String,
+    required: [
+      true,
+      'Pet must have age in ["baby", "young", "adult", "senior"]'
+    ],
+    enum: ["baby", "young", "adult", "senior"],
+    lowercase: true,
+    // uppercase: true,
+    trim: true
+  },
+  created_on: {
+    type: Date,
+    default: Date.now()
+  },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
   }
-];
+});
 
-export const create = (name, category, breed, age) => {
-  const pet = {
-    id: pets[pets.length - 1].id + 1,
-    name,
-    category,
-    breed,
-    age
-  };
-  pets.push(pet);
-  return pet;
-};
+const Pet = mongoose.model("Pet", petSchema);
 
-export const update = (id, name, category, breed, age) => {
-  let pet = pets.find(u => u.id === id);
-  pet = {
-    ...pet,
-    name,
-    category,
-    breed,
-    age
-  };
-  return pet;
-};
+function validatePet(pet) {
+  const schema = Joi.object().keys({
+    name: Joi.string()
+      .min(2)
+      .max(50)
+      .required(),
+    categoryId: Joi.objectId().required(),
+    breed: Joi.string().required(),
+    age: Joi.string().required(),
+    ownerId: Joi.objectId().required()
+  });
+  return Joi.validate(pet, schema);
+}
 
-export const findAll = () => pets;
-
-export const findById = id => pets.find(pet => pet.id === id);
-
-export const remove = id => {
-  pets = pets.filter(pet => pet.id !== id);
-  return pets;
-};
+export { Pet, validatePet as validate };
 ```
 
 ### Step 4: Create CRUD API
@@ -164,7 +168,7 @@ export const remove = id => {
 
 ```
 POST   /api/pets { name, category, breed, age, tags } -- create new pet with auth
-GET    /api/pets -- get all pets by everyone
+GET    /api/pets -- get all pets with auth
 
 GET    /api/pets/:id -- get pet by id with auth, validate ObjectId
 PUT    /api/pets/:id { name, category, breed, age, tags } -- update pet by id with auth, validate ObjectId
@@ -176,105 +180,214 @@ DELETE /api/pets/:id -- delete pet by id with auth, validate ObjectId
 ```javascript
 // ./src/api/routes/pets.js
 import express from "express";
-import Joi from "joi";
 import * as controller from "../controllers/pets";
-import admin from "../middlewares/admin"; // use for validate is admin?
 import auth from "../middlewares/auth"; // use for auth with JWT
 import paginate from "../middlewares/paginate"; // use for paginations
-import validate from "../middlewares/validate"; // use for need to validate body
 import validateObjectId from "../middlewares/validateObjectId"; // use for validate id format
 
 export const router = express.Router();
 
 router
   .route("/")
-  .post([auth, validate(validateBody)], controller.create)
-  .get(paginate, controller.findAll);
+  .post(auth, controller.create)
+  .get([auth, paginate], controller.findAll);
 
 router
   .route("/:id")
   .get([auth, validateObjectId], controller.findOne)
-  .delete([auth, admin, validateObjectId], controller.remove)
-  .put([auth, validate(validateBody), validateObjectId], controller.update);
-
-function validateBody(body) {
-  const schema = Joi.object().keys({
-    name: Joi.string().required(),
-    category: Joi.string().required(),
-    breed: Joi.string().required(),
-    age: Joi.string().required()
-  });
-  const { value, error } = Joi.validate(body, schema);
-  if (error && error.details) {
-    return { error };
-  }
-  return { value };
-}
+  .delete([auth, validateObjectId], controller.remove)
+  .put([auth, validateObjectId], controller.update);
 ```
 
 ### Step 5: Create controller
 
-- Create new file `./src/api/controllers/examples.js`
+- Create new file `./src/api/controllers/pets.js`
 
 ```javascript
-// ./src/api/controllers/examples.js
-import * as Pet from "../models/pet"; // replace with your model
-import paginate from "../helpers/paginate";
+// ./src/api/controllers/pets.js
+import Fawn from "fawn";
+import { Owner } from "../models/owner";
+import { Pet, validate } from "../models/pet";
+import { Category } from "../models/category";
+import paginate from "../helpers/paginate.js";
 
 export const create = async (req, res) => {
-  const { name, category, breed, age } = req.body;
-  const data = await Promise.resolve(Pet.create(name, category, breed, age)); // insert
-  return res.json(data);
+  const { error } = validate(req.body);
+
+  if (error)
+    return res.status(400).json({
+      error: { message: error.details.map(detail => detail.message) }
+    });
+
+  const category = await Category.findById(req.body.categoryId);
+  if (!category)
+    return res.status(400).json({ error: { message: "Invalid category." } });
+
+  let pet = new Pet({
+    name: req.body.name,
+    category: {
+      _id: category._id,
+      name: category.name
+    },
+    breed: req.body.breed,
+    age: req.body.age,
+    ownerId: req.body.ownerId
+  });
+  pet = await pet.save();
+
+  return res.json(pet);
 };
 
 export const findAll = async (req, res) => {
   const { limit, offset, page } = req.query;
-  // query with offset and limit
-  let datas = new Promise(resolve =>
-    resolve(Pet.findAll().slice(offset, limit + offset))
-  );
-  // count with same query criteria
-  let counts = new Promise(resolve => resolve(Pet.findAll().length));
-  [datas, counts] = await Promise.all([datas, counts]);
-  const results = paginate(datas, counts, limit, offset, page);
+  let pets = await Pet.find()
+    .sort("name")
+    .skip(offset)
+    .limit(limit);
+  let counts = Pet.count({}).exec();
+  [pets, counts] = await Promise.all([pets, counts]);
+  const results = paginate(pets, counts, limit, offset, page);
   res.send(results);
 };
 
 export const findOne = async (req, res) => {
-  const { id } = req.params;
-  // find by id
-  const data = await Promise.resolve(Pet.findById(+id));
-  if (!data) {
-    return res.status(404).json({ err: "could not find data" });
-  }
-  return res.json(data);
+  const pet = await Pet.findById(req.params.id);
+
+  if (!pet)
+    return res
+      .status(404)
+      .json({ error: { message: "The pet with the given ID was not found." } });
+
+  res.send(pet);
 };
 
 export const remove = async (req, res) => {
-  const { id } = req.params;
-  // find by id and remove
-  const user = await Promise.resolve(Pet.findById(+id));
-  if (!user) {
-    return res.status(404).json({ err: "could not find data" });
-  }
-  const data = await Promise.resolve(Pet.remove(+id));
-  if (!data) {
-    return res.status(404).json({ err: "could not find data" });
-  }
-  return res.json(data);
+  const pet = await Pet.findByIdAndRemove(req.params.id);
+
+  if (!pet)
+    return res
+      .status(404)
+      .json({ error: { message: "The pet with the given ID was not found." } });
+
+  res.send(pet);
 };
 
 export const update = async (req, res) => {
-  const { id } = req.params;
-  // find by id and update
-  const user = await Promise.resolve(Pet.findById(+id));
-  if (!user) {
-    return res.status(404).json({ err: "could not find data" });
-  }
-  const { name, category, breed, age } = req.body;
-  const data = await Promise.resolve(
-    Pet.update(id, name, category, breed, age)
+  const { error } = validate(req.body);
+  if (error)
+    return res.status(400).json({
+      error: { message: error.details.map(detail => detail.message) }
+    });
+
+  const category = await Category.findById(req.body.categoryId);
+  if (!category)
+    return res.status(400).json({ error: { message: "Invalid category." } });
+
+  const pet = await Pet.findByIdAndUpdate(
+    req.params.id,
+    {
+      name: req.body.name,
+      category: {
+        _id: category._id,
+        name: category.name
+      },
+      breed: req.body.breed,
+      age: req.body.age,
+      ownerId: req.user._id
+    },
+    { new: true }
   );
-  return res.json(data);
+
+  if (!pet)
+    return res
+      .status(404)
+      .json({ error: { message: "The pet with the given ID was not found." } });
+
+  res.send(pet);
 };
+```
+
+### Transactions in MongoDB
+
+- Install [Fawn](https://www.npmjs.com/package/fawn): `npm i -S fawn`
+
+- Example use fawn to insert new pet and update total pets in owner.
+
+- Fawn init in `./src/startup/db.js`
+
+```javascript
+import Fawn from "fawn";
+import mongoose from "mongoose";
+import winston from "winston";
+import config from "../config";
+
+export default () => {
+  mongoose
+    .connect(
+      config.DB_URI,
+      { useNewUrlParser: true }
+    )
+    .then(() => winston.info("Connected to MongoDB..."));
+
+  // add Fawn init here
+  Fawn.init(mongoose);
+};
+```
+
+- Edit create pet function:
+
+```javascript
+// ./src/startup/db.js
+import Fawn from "fawn";
+import Pet from "../models/pet";
+import Owner from "../models/owner";
+
+// ...
+
+export const create = async (req, res) => {
+  // ...
+
+  // replace this line:
+  // pet = await pet.save();
+
+  const task = Fawn.Task();
+  task.save(Pet, pet);
+  task.update(Owner, { _id: pet.ownerId }, { $inc: { petCount: 1 } });
+  task.run({ useMongoose: true });
+  return res.json(pet);
+};
+```
+
+### Pagination plugin
+
+- Install `npm i -S mongoose-paginate`
+
+- Edit `./src/api/models/pet.js`
+
+```javascript
+// ./src/api/models/pet.js
+import mongoosePaginate from "mongoose-paginate";
+
+// ...
+
+// set plugin before export
+petSchema.plugin(mongoosePaginate);
+export default mongoose.model("Pet", petSchema);
+```
+
+- Edit `findAll` function in `./src/api/controllers/pets.js`
+
+```javascript
+// ./src/api/controllers/pets.js
+import Pet from "../models/pet";
+
+export const findAll = async (req, res) {
+  const { page, limit } = req.query;
+    const options = {
+      page: parseInt(page, 10) || 1,
+      limit: parseInt(limit, 10) || 10,
+    };
+    const pets = await Pet.paginate({}, options);
+    return res.json(pets);
+}
 ```

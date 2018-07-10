@@ -10,8 +10,8 @@ export default app => {
   if (app.get('env') === 'production') {
     app.use(helmet());
   }
-  app.use(express.json()); // parse application/json
-  app.use(express.urlencoded({ extended: true })); // parse application/x-www-form-urlencoded
+  // use only application/json
+  app.use(express.json());
   if (app.get('env') === 'development') {
     app.use(morgan('dev'));
   }

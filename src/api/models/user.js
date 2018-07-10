@@ -1,53 +1,42 @@
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
+import mongoose from 'mongoose';
 import config from '../../config';
 
-const users = [
-  {
-    id: 1,
-    name: 'admin',
-    email: 'admin@mail.com',
-    password: '$2a$10$pxm3qveeachHam7KiRpsHePkN8pZ1WdqrHyfM1AoVrEHRrZszK6hy',
-    isAdmin: true,
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    minlength: 5,
+    maxlength: 50,
   },
-  {
-    id: 2,
-    name: 'user1',
-    email: 'user1@mail.com',
-    password: '$2a$10$pxm3qveeachHam7KiRpsHePkN8pZ1WdqrHyfM1AoVrEHRrZszK6hy',
-    isAdmin: false,
+  email: {
+    type: String,
+    required: true,
+    minlength: 5,
+    maxlength: 255,
+    unique: true,
   },
-  {
-    id: 3,
-    name: 'user2',
-    email: 'user2@mail.com',
-    password: '$2a$10$pxm3qveeachHam7KiRpsHePkN8pZ1WdqrHyfM1AoVrEHRrZszK6hy',
-    isAdmin: false,
+  password: {
+    type: String,
+    required: true,
+    minlength: 5,
+    maxlength: 1024,
   },
-];
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-export const generateAuthToken = user => {
-  const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, config.JWT_SECRET);
+userSchema.methods.generateAuthToken = function() {
+  const token = jwt.sign({ _id: this._id, isAdmin: this.isAdmin }, config.JWT_SECRET);
   return token;
 };
 
-export const create = (name, email, password, isAdmin) => {
-  const user = {
-    id: users[users.length - 1].id + 1,
-    name,
-    email,
-    password,
-    isAdmin,
-  };
-  users.push(user);
-  return user;
-};
+const User = mongoose.model('User', userSchema);
 
-export const findById = id => users.find(user => user.id === id);
-
-export const findByEmail = email => users.find(user => user.email === email);
-
-export const validate = user => {
+function validateUser(user) {
   const schema = {
     name: Joi.string()
       .min(5)
@@ -62,6 +51,10 @@ export const validate = user => {
       .min(5)
       .max(255)
       .required(),
+    isAdmin: Joi.boolean().optional(),
   };
+
   return Joi.validate(user, schema);
-};
+}
+
+export { User, validateUser as validate };

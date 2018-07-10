@@ -7,6 +7,7 @@ const whitelist = ['http://example1.com', 'http://example2.com'];
 
 export default {
   PORT: process.env.appName_PORT || 3000,
+  PAGE_LIMIT: process.env.appName_PAGE_LIMIT || 10,
   DB_URI: process.env.appName_DB_URI,
   JWT_SECRET: process.env.appName_JWT_SECRET,
   CORS_OPTIONS: {

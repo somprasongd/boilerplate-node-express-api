@@ -1,56 +1,56 @@
-let pets = [
-  {
-    id: 1,
-    name: 'admin',
-    category: 'dog',
-    breed: 'ไทย',
-    age: 'senior',
+import Joi from 'joi';
+import mongoose from 'mongoose';
+import { categorySchema } from './category';
+
+const petSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Pet must have name'],
+    minlength: 2,
+    maxlength: 50,
+    // match: /pattern/
   },
-  {
-    id: 2,
-    name: 'tamp',
-    category: 'dog',
-    breed: 'ไทย - บางแก้ว',
-    age: 'adult',
+  category: {
+    type: categorySchema,
+    required: true,
   },
-  {
-    id: 3,
-    name: 'snow',
-    category: 'dog',
-    breed: 'ไทย - บางแก้ว',
-    age: 'adult',
+  breed: {
+    type: String,
+    required: [true, 'Pet must have breed'],
   },
-];
+  age: {
+    type: String,
+    required: [true, 'Pet must have age in ["baby", "young", "adult", "senior"]'],
+    enum: ['baby', 'young', 'adult', 'senior'],
+    lowercase: true,
+    // uppercase: true,
+    trim: true,
+  },
+  created_on: {
+    type: Date,
+    default: Date.now(),
+  },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+});
 
-export const create = (name, category, breed, age) => {
-  const pet = {
-    id: pets[pets.length - 1].id + 1,
-    name,
-    category,
-    breed,
-    age,
-  };
-  pets.push(pet);
-  return pet;
-};
+const Pet = mongoose.model('Pet', petSchema);
 
-export const update = (id, name, category, breed, age) => {
-  let pet = pets.find(u => u.id === id);
-  pet = {
-    ...pet,
-    name,
-    category,
-    breed,
-    age,
-  };
-  return pet;
-};
+function validatePet(pet) {
+  const schema = Joi.object().keys({
+    name: Joi.string()
+      .min(2)
+      .max(50)
+      .required(),
+    categoryId: Joi.objectId().required(),
+    breed: Joi.string().required(),
+    age: Joi.string().required(),
+    ownerId: Joi.objectId().required(),
+  });
+  return Joi.validate(pet, schema);
+}
 
-export const findAll = () => pets;
-
-export const findById = id => pets.find(pet => pet.id === id);
-
-export const remove = id => {
-  pets = pets.filter(pet => pet.id !== id);
-  return pets;
-};
+export { Pet, validatePet as validate };

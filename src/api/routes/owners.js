@@ -1,8 +1,8 @@
 import express from 'express';
-import * as controller from '../controllers/pets';
-import auth from '../middlewares/auth'; // use for auth with JWT
-import paginate from '../middlewares/paginate'; // use for paginations
-import validateObjectId from '../middlewares/validateObjectId'; // use for validate id format
+import * as controller from '../controllers/owners';
+import auth from '../middlewares/auth';
+import paginate from '../middlewares/paginate';
+import validateObjectId from '../middlewares/validateObjectId';
 
 export const router = express.Router();
 
