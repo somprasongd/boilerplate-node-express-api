@@ -2,6 +2,63 @@
 
 Boilerplate APIs with express
 
+## Folder Structure
+
+```
+./
+----/dist # distributed source code
+----/logs # collect log files in production mode
+----/src # development source code
+--------/api # api routes
+------------controllers # handler functions for each route to handle req, res
+------------helpers # helper functions
+------------middlewares # routes middlewares such as authorization middlware
+------------models # ORM files
+------------routes # api routes, use file name to api URI (/api/[filename])
+------------index.js # export all router (express.Router())
+--------/config # config variables
+------------development.js # config in dev mode
+------------index.js # export this module with match environtment
+------------production.js # config in prod mode
+--------/doc # api document
+------------swagger.json # swagger config file
+--------/startup # startup app module
+------------config.js # validate config variables, if not have exit app
+------------db.js # connect to database
+------------index.js # export this module
+------------logging.js # config winston log
+------------middlewares.js # handle express middlewares
+------------routes.js # handle route for http req, res
+--------index.js # main app
+----.babelrc # babel config file
+----.env # set system environtments in this file, it will load to process.env
+----.eslintignore # use to ignore lint such as /dist
+----.eslintrc.js #  eslint config file
+----.gitignore
+----package.json
+```
+
+- Or use this style.
+
+```
+./
+----/src # development source code
+--------/api # api routes
+------------helpers # helper functions
+------------middlewares # routes middlewares such as authorization middlware
+------------models # ORM files
+------------resources # api routes, use directory name to api URI (/api/[dirname])
+----------------routes1 # /api/routes1
+--------------------index.js # export router in routes1.router.js
+--------------------routes1.controllers.js # handler functions for each route to handle req, res
+--------------------routes1.router.js # handler router for /api/routes1
+----------------routes2 # /api/routes2
+--------------------index.js # export router in routes2.router.js
+--------------------routes2.controllers.js # handler functions for each route to handle req, res
+--------------------routes2.router.js # handler router for /api/routes2
+------------index.js # export all router (express.Router())
+```
+
 ## How to connect DB
 
 ### Step 1: Config DB_URI
