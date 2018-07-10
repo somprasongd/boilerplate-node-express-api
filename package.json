@@ -12,6 +12,10 @@
   },
   "keywords": [],
   "author": "Somprasong Damyos",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/somprasongd/boilerplate-node-express-api.git"
+  },
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -20,13 +24,11 @@
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "express-async-errors": "^3.0.0",
-    "fawn": "^2.1.5",
     "helmet": "^3.12.1",
     "joi": "^13.4.0",
     "joi-objectid": "^2.0.0",
     "jsonwebtoken": "^8.3.0",
     "moment": "^2.22.2",
-    "mongoose": "^5.2.1",
     "morgan": "^1.9.0",
     "swagger-ui-express": "^3.0.10",
     "winston": "^3.0.0"
