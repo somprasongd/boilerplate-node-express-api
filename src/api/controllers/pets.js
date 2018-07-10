@@ -2,14 +2,17 @@ import * as Pet from '../models/pet';
 import paginate from '../helpers/paginate';
 
 export const create = async (req, res) => {
-  const data = await Promise.resolve({}); // insert
+  const { name, category, breed, age } = req.body;
+  const data = await Promise.resolve(Pet.create(name, category, breed, age)); // insert
   return res.json(data);
 };
 
 export const findAll = async (req, res) => {
   const { limit, offset, page } = req.query;
-  let datas = new Promise(resolve => Pet.findAll().slice(offset, limit)); // query with offset and limit
-  let counts = new Promise(resolve => Pet.findAll()); // count with same query criteria
+  // query with offset and limit
+  let datas = new Promise(resolve => resolve(Pet.findAll().slice(offset, limit + offset)));
+  // count with same query criteria
+  let counts = new Promise(resolve => resolve(Pet.findAll().length));
   [datas, counts] = await Promise.all([datas, counts]);
   const results = paginate(datas, counts, limit, offset, page);
   res.send(results);
@@ -17,7 +20,8 @@ export const findAll = async (req, res) => {
 
 export const findOne = async (req, res) => {
   const { id } = req.params;
-  const data = await Promise.resolve(Pet.findById(id)); // find by id
+  // find by id
+  const data = await Promise.resolve(Pet.findById(+id));
   if (!data) {
     return res.status(404).json({ err: 'could not find data' });
   }
@@ -26,7 +30,12 @@ export const findOne = async (req, res) => {
 
 export const remove = async (req, res) => {
   const { id } = req.params;
-  const data = await Promise.resolve(Pet.remove(id)); // find by id and remove
+  // find by id and remove
+  const user = await Promise.resolve(Pet.findById(+id));
+  if (!user) {
+    return res.status(404).json({ err: 'could not find data' });
+  }
+  const data = await Promise.resolve(Pet.remove(+id));
   if (!data) {
     return res.status(404).json({ err: 'could not find data' });
   }
@@ -35,15 +44,12 @@ export const remove = async (req, res) => {
 
 export const update = async (req, res) => {
   const { id } = req.params;
-  const user = await Promise.resolve(Pet.findById(id));
-  user.name = req.body.name;
-  user.category = req.body.category;
-  user.breed = req.body.breed;
-  user.age = req.body.age;
-  // { new: true } is tell mongoose return updated object into pet
-  const data = await Promise.resolve(Pet.update(user)); // find by id and update and return update object
-  if (!data) {
+  // find by id and update
+  const user = await Promise.resolve(Pet.findById(+id));
+  if (!user) {
     return res.status(404).json({ err: 'could not find data' });
   }
+  const { name, category, breed, age } = req.body;
+  const data = await Promise.resolve(Pet.update(id, name, category, breed, age));
   return res.json(data);
 };

@@ -1,4 +1,4 @@
-const pets = [
+let pets = [
   {
     id: 1,
     name: 'admin',
@@ -50,4 +50,7 @@ export const findAll = () => pets;
 
 export const findById = id => pets.find(pet => pet.id === id);
 
-export const remove = id => pets.filter(pet => pet.id !== id);
+export const remove = id => {
+  pets = pets.filter(pet => pet.id !== id);
+  return pets;
+};

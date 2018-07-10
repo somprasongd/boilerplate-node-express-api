@@ -1,6 +1,7 @@
 import express from 'express';
 import Joi from 'joi';
 import * as controller from '../controllers/pets';
+import admin from '../middlewares/admin';
 import auth from '../middlewares/auth'; // use for auth with JWT
 import paginate from '../middlewares/paginate'; // use for paginations
 import validate from '../middlewares/validate'; // use for need to validate body
@@ -16,8 +17,8 @@ router
 router
   .route('/:id')
   .get([auth, validateObjectId], controller.findOne)
-  .delete([auth, validateObjectId], controller.delete)
-  .put([[auth, validate(validateBody)], validateObjectId], controller.update);
+  .delete([auth, admin, validateObjectId], controller.remove)
+  .put([auth, validate(validateBody), validateObjectId], controller.update);
 
 function validateBody(body) {
   const schema = Joi.object().keys({

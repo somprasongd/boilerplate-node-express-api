@@ -14,14 +14,14 @@ const users = [
     id: 2,
     name: 'user1',
     email: 'user1@mail.com',
-    password: '$2a$10$1dqH/lub4GryaiMWsSDTEeExEsKxp4GMuMwKm8m2PFKgENEDzWLje',
+    password: '$2a$10$pxm3qveeachHam7KiRpsHePkN8pZ1WdqrHyfM1AoVrEHRrZszK6hy',
     isAdmin: false,
   },
   {
     id: 3,
     name: 'user2',
     email: 'user2@mail.com',
-    password: '$2a$10$h0MZmpmsEN0QVhBsz0NvneoobLagfqVysupXhQVMWgGRWE3BusqQ.',
+    password: '$2a$10$pxm3qveeachHam7KiRpsHePkN8pZ1WdqrHyfM1AoVrEHRrZszK6hy',
     isAdmin: false,
   },
 ];

@@ -14,7 +14,7 @@
   "author": "Somprasong Damyos",
   "license": "MIT",
   "dependencies": {
-    "bcrypt-nodejs": "0.0.3",
+    "bcryptjs": "^2.4.3",
     "config": "^1.30.0",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
