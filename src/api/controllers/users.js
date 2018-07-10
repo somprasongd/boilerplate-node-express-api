@@ -3,7 +3,7 @@ import { User, validate } from '../models/user';
 
 export const signup = async (req, res) => {
   const { error } = validate(req.body);
-  if (error) return res.status(400).json({ error: { message: error.details.map(detail => detail.message) } });
+  if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
   let user = await User.findOne({ email: req.body.email });
   if (user) return res.status(400).json({ error: { message: 'User already registered.' } });

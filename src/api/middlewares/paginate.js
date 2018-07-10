@@ -3,7 +3,7 @@ import config from '../../config';
 
 export default (req, res, next) => {
   const { error } = validate(req.query);
-  if (error) return res.status(400).json({ error: { message: error.details.map(detail => detail.message) } });
+  if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
   req.query.limit = req.query.hasOwnProperty('limit') ? +req.query.limit : config.PAGE_LIMIT;
   if (req.query.hasOwnProperty('offset')) {

@@ -3,7 +3,7 @@ import paginate from '../helpers/paginate.js';
 
 export const create = async (req, res) => {
   const { error } = validate(req.body);
-  if (error) return res.status(400).json({ error: { message: error.details.map(detail => detail.message) } });
+  if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
   let owner = new Owner({
     name: req.body.name,
@@ -44,7 +44,7 @@ export const remove = async (req, res) => {
 
 export const update = async (req, res) => {
   const { error } = validate(req.body);
-  if (error) return res.status(400).json({ error: { message: error.details.map(detail => detail.message) } });
+  if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
   const owner = await Owner.findByIdAndUpdate(
     req.params.id,
