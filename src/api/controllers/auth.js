@@ -4,7 +4,7 @@ import * as User from '../models/user';
 
 export const login = async (req, res) => {
   const { error } = validate(req.body);
-  if (error) return res.status(400).json({ err: error.details.map(detail => detail.message) });
+  if (error) return res.status(400).json({ err: error.details[0].message });
 
   const user = await User.findByEmail(req.body.email);
   if (!user) return res.status(400).json({ err: 'Invalid email or password.' });
