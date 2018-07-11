@@ -3,10 +3,10 @@ import * as User from '../models/user';
 
 export const signup = async (req, res) => {
   const { error } = User.validate(req.body);
-  if (error) return res.status(400).json({ err: error.details[0].message });
+  if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
   let user = await User.findByEmail({ email: req.body.email });
-  if (user) return res.status(400).json({ err: 'User already registered.' });
+  if (user) return res.status(400).json({ error: { message: 'User already registered.' } });
 
   const { name, email, password } = req.body;
   user = { name, email, password };
@@ -25,7 +25,7 @@ export const findOne = async (req, res) => {
       resolve(User.findById(req.user.id));
     }, 1000);
   });
-  if (!user) return res.status(400).json({ err: 'Invalid user Id' });
+  if (!user) return res.status(400).json({ error: { message: 'Invalid user Id' } });
   const { id, name, email } = user;
   res.send({ id, name, email });
 };

@@ -23,7 +23,7 @@ export const findOne = async (req, res) => {
   // find by id
   const data = await Promise.resolve(Pet.findById(+id));
   if (!data) {
-    return res.status(404).json({ err: 'could not find data' });
+    return res.status(404).json({ error: { message: 'could not find data' } });
   }
   return res.json(data);
 };
@@ -33,11 +33,11 @@ export const remove = async (req, res) => {
   // find by id and remove
   const user = await Promise.resolve(Pet.findById(+id));
   if (!user) {
-    return res.status(404).json({ err: 'could not find data' });
+    return res.status(404).json({ error: { message: 'could not find data' } });
   }
   const data = await Promise.resolve(Pet.remove(+id));
   if (!data) {
-    return res.status(404).json({ err: 'could not find data' });
+    return res.status(404).json({ error: { message: 'could not find data' } });
   }
   return res.json(data);
 };
@@ -47,7 +47,7 @@ export const update = async (req, res) => {
   // find by id and update
   const user = await Promise.resolve(Pet.findById(+id));
   if (!user) {
-    return res.status(404).json({ err: 'could not find data' });
+    return res.status(404).json({ error: { message: 'could not find data' } });
   }
   const { name, category, breed, age } = req.body;
   const data = await Promise.resolve(Pet.update(id, name, category, breed, age));

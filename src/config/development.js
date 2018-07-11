@@ -1,5 +1,6 @@
 export default {
   PORT: 3000,
+  PAGE_LIMIT: 10,
   // connect to mongodb
   DB_URI: 'mongodb://username:password@host:port/database',
   // or connect to postgresql
