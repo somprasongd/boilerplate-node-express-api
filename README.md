@@ -229,9 +229,9 @@ export const create = async (req, res) => {
   const { error } = validate(req.body);
 
   if (error)
-    return res.status(400).json({
-      error: { message: error.details.map(detail => detail.message) }
-    });
+    return res
+      .status(400)
+      .json({ error: { message: error.details[0].message } });
 
   const category = await Category.findById(req.body.categoryId);
   if (!category)
