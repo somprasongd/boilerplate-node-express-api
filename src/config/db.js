@@ -1,7 +1,7 @@
 import pgPromise from 'pg-promise';
 import winston from 'winston';
 import config from '.';
-import repos from '../api/repos';
+import repos from '../api/reposotories';
 
 const initOptions = {
   // pg-promise initialization options...

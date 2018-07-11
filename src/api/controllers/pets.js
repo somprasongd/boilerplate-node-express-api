@@ -3,10 +3,19 @@ import db from '../../config/db';
 import paginate from '../helpers/paginate.js';
 
 export const create = async (req, res) => {
-  const { error, value } = validate(req.body);
+  const schema = Joi.object().keys({
+    name: Joi.string()
+      .min(2)
+      .max(50)
+      .required(),
+    categoryId: Joi.number().required(),
+    breed: Joi.string().required(),
+    age: Joi.string().required(),
+    ownerId: Joi.number().required(),
+  });
+  const { error, value } = Joi.validate(req.body, schema);
   if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
-  const { name, categoryId, breed, age, ownerId } = value;
   const pet = {
     name: value.name,
     breed: value.breed,
@@ -17,7 +26,7 @@ export const create = async (req, res) => {
 
   const result = await db.tx(async t => {
     const data = await t.pet.create(pet);
-    await t.none('UPDATE owner SET pet_count = pet_count + 1 WHERE id = $1', [pet.owner_id]);
+    await t.user.incPetCount(pet.owner_id);
     return data;
   });
 
@@ -26,13 +35,17 @@ export const create = async (req, res) => {
 
 export const findAll = async (req, res) => {
   const { limit, offset, page } = req.query;
-  let categories = await db.manyOrNone('select * from pet offset $<offset> limit $<limit>', {
-    offset,
-    limit,
+  const { datas, counts } = await db.task(async t => {
+    const p1 = t.manyOrNone('select * from pet offset $<offset> limit $<limit>', {
+      offset,
+      limit,
+    });
+    const p2 = t.one('SELECT count(*) FROM pet', [], a => +a.count);
+    const [datas, counts] = await Promise.all([p1, p2]);
+    return { datas, counts };
   });
-  let counts = await db.one('SELECT count(*) FROM pet', [], a => +a.count);
-  [categories, counts] = await Promise.all([categories, counts]);
-  const results = paginate(categories, counts, limit, offset, page);
+
+  const results = paginate(datas, counts, limit, offset, page);
   res.send(results);
 };
 
@@ -53,28 +66,34 @@ export const remove = async (req, res) => {
 };
 
 export const update = async (req, res) => {
-  const { error } = validate(req.body);
-  if (error) return res.status(400).json({ error: { message: error.details[0].message } });
-
-  let pet = await db.pet.findById(req.params.id);
-
-  if (!pet) return res.status(404).json({ error: { message: 'The pet with the given ID was not found.' } });
-
-  pet = await db.pet.update(req.params.id, req.body);
-
-  res.send(pet);
-};
-
-function validate(pet) {
-  const schema = Joi.object().keys({
+  const schema = {
     name: Joi.string()
       .min(2)
       .max(50)
-      .required(),
-    categoryId: Joi.number().required(),
-    breed: Joi.string().required(),
-    age: Joi.string().required(),
-    ownerId: Joi.number().required(),
+      .optional(),
+    categoryId: Joi.number().optional(),
+    breed: Joi.string().optional(),
+    age: Joi.string().optional(),
+    ownerId: Joi.number().optional(),
+  };
+
+  const { error, value } = Joi.validate(req.body, schema);
+  if (error) return res.status(400).json({ error: { message: error.details[0].message } });
+  console.log(value);
+
+  const pet = await db.task(async t => {
+    let pet = await t.pet.findById(req.params.id);
+
+    if (!pet) {
+      const error = new Error();
+      error.message = 'The pet with the given ID was not found.';
+      error.status = 404;
+      throw error;
+    }
+
+    pet = await t.pet.update(req.params.id, value);
+    return pet;
   });
-  return Joi.validate(pet, schema);
-}
+
+  res.send(pet);
+};

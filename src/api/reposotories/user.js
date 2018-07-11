@@ -34,4 +34,8 @@ export default class UserRepository {
   find(obj) {
     return this.db.manyOrNone('SELECT * FROM "user" WHERE $<this:name> = $<this:csv>', obj);
   }
+
+  incPetCount(id) {
+    return this.db.none('UPDATE owner SET pet_count = pet_count + 1 WHERE id = $1', [id]);
+  }
 }

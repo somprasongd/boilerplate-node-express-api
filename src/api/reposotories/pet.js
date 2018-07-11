@@ -1,4 +1,4 @@
-import Joi from 'joi';
+import renameObjectKey from '../helpers/renameObjectKey';
 
 export default class OwnerRepository {
   constructor(db, pgp) {
@@ -6,12 +6,22 @@ export default class OwnerRepository {
     this.pgp = pgp;
   }
 
+  get keyMap() {
+    this._ketMap = {
+      categoryId: 'category_id',
+      ownerId: 'owner_id',
+    };
+    return this._ketMap;
+  }
+
   create(obj) {
-    return this.db.one('INSERT INTO pet ($<this:name>) VALUES($<this:csv>) RETURNING *', obj);
+    const values = renameObjectKey(obj, this.keyMap);
+    return this.db.one('INSERT INTO pet ($<this:name>) VALUES($<this:csv>) RETURNING *', values);
   }
 
   update(id, obj) {
-    return this.db.one('UPDATE pet set($<$2:name>) VALUES($<$2:csv>) WHERE id = $1 RETURNING *', [+id, obj]);
+    const values = renameObjectKey(obj, this.keyMap);
+    return this.db.one('UPDATE pet set ($<this:name>)=($<this:csv>) WHERE id = 1 RETURNING *', values);
   }
 
   // Tries to delete a pet by id, and returns the number of records deleted;
@@ -32,17 +42,3 @@ export default class OwnerRepository {
     return this.db.manyOrNone('SELECT * FROM pet WHERE $<this:name> = $<this:csv>', obj);
   }
 }
-
-export const validate = pet => {
-  const schema = Joi.object().keys({
-    name: Joi.string()
-      .min(2)
-      .max(50)
-      .required(),
-    categoryId: Joi.objectId().required(),
-    breed: Joi.string().required(),
-    age: Joi.string().required(),
-    ownerId: Joi.objectId().required(),
-  });
-  return Joi.validate(pet, schema);
-};
