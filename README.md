@@ -59,6 +59,20 @@ Boilerplate APIs with express
 ------------index.js # export all router (express.Router())
 ```
 
+_Remark: this style must change routers loader from file name to dir name_
+
+```javascript
+// ./src/api/index.js
+const PATH = path.join(__dirname, "resources");
+fs.readdirSync(PATH)
+  .filter(file => file.indexOf(".") !== 0 && file !== "index.js")
+  .forEach(feature => {
+    // load from /api/resources/[feature]/index
+    const { router } = require(path.join(PATH, `${feature}`));
+    apiRouter.use(`/${feature}`, router);
+  });
+```
+
 ## How to connect DB
 
 ### Step 1: Config DB_URI
