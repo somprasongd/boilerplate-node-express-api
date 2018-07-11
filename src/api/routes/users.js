@@ -5,4 +5,4 @@ import auth from '../middlewares/auth';
 export const router = express.Router();
 
 router.post('/', controller.signup);
-router.get('/me', auth, controller.findOne);
+router.get('/me', auth, controller.findMe);

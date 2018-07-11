@@ -1,21 +1,21 @@
 import Joi from 'joi';
+import db from '../../config/db';
 import bcrypt from '../helpers/bcrypt';
-import * as User from '../models/user';
+import { generateAuthToken } from '../helpers/token';
 
 export const login = async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
-  const user = await User.findByEmail(req.body.email);
+  const user = await db.user.findByEmail(req.body.email);
   if (!user) return res.status(400).json({ error: { message: 'Invalid email or password.' } });
 
   const validPassword = await bcrypt.compare(req.body.password, user.password);
-
   if (!validPassword) return res.status(400).json({ error: { message: 'Invalid email or password.' } });
 
-  const token = User.generateAuthToken(user);
-  const { id, name, email } = user;
-  res.send({ id, name, email, token });
+  const token = generateAuthToken(user);
+  const { id, name, email, isAdmin } = user;
+  res.send({ id, name, email, isAdmin, token });
 };
 
 export const logout = async (req, res) => {

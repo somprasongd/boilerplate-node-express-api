@@ -1,31 +1,48 @@
+import Joi from 'joi';
+import db from '../../config/db';
 import bcrypt from '../helpers/bcrypt';
-import * as User from '../models/user';
+import { generateAuthToken } from '../helpers/token';
 
 export const signup = async (req, res) => {
-  const { error } = User.validate(req.body);
+  const { error, value } = validate(req.body);
   if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
-  let user = await User.findByEmail({ email: req.body.email });
+  let user = await db.user.findByEmail(req.body.email);
   if (user) return res.status(400).json({ error: { message: 'User already registered.' } });
 
-  const { name, email, password } = req.body;
-  user = { name, email, password };
+  user = { name: value.name, email: value.email };
+  user.is_admin = value.isAdmin;
+  user.password = await bcrypt.hash(value.password);
 
-  user.password = await bcrypt.hash(password);
-  user = User.create(user);
+  user = await db.user.create(user);
 
-  const token = User.generateAuthToken(user);
-  const { id } = user;
-  res.send({ id, name, email, token });
+  const token = generateAuthToken(user);
+  const { id, name, email } = user;
+  res.json({ id, name, email, token });
 };
 
-export const findOne = async (req, res) => {
-  const user = await new Promise(resolve => {
-    setTimeout(() => {
-      resolve(User.findById(req.user.id));
-    }, 1000);
-  });
-  if (!user) return res.status(400).json({ error: { message: 'Invalid user Id' } });
+export const findMe = async (req, res) => {
+  const user = await db.user.findById(req.user._id);
   const { id, name, email } = user;
-  res.send({ id, name, email });
+  res.json({ id, name, email });
+};
+
+const validate = user => {
+  const schema = {
+    name: Joi.string()
+      .min(5)
+      .max(50)
+      .required(),
+    email: Joi.string()
+      .min(5)
+      .max(255)
+      .required()
+      .email(),
+    password: Joi.string()
+      .min(5)
+      .max(255)
+      .required(),
+    isAdmin: Joi.boolean().optional(),
+  };
+  return Joi.validate(user, schema);
 };
