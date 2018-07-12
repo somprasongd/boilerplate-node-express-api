@@ -3,12 +3,14 @@ import winston from 'winston';
 import config from '.';
 import repos from '../api/repositories';
 
+// pg-promise initialization options...
 const initOptions = {
-  // pg-promise initialization options...
   receive(data, result, e) {
+    // convert column from xxx_yy to xxxYy
     camelizeColumns(data);
   },
   query(e) {
+    // show SQL to console
     winston.info(`QUERY: ${e.query}`);
   },
   connect(client, dc, useCount) {
@@ -19,19 +21,15 @@ const initOptions = {
     // const cp = client.connectionParameters;
     winston.info(`Disconnecting from database`);
   },
-  // global event notification;
   error(error, e) {
     if (e.cn) {
       // A connection-related error;
-      //
-      // Connections are reported back with the password hashed,
-      // for safe errors logging, without exposing passwords.
       winston.debug(`CN: ${e.cn}`);
       winston.debug(`EVENT: ${error.message || error}`);
     }
   },
-  // Extending the database protocol with our custom repositories;
   extend(obj, dc) {
+    // Extending the database protocol with our custom repositories;
     obj.users = new repos.UsersRepository(obj, pgp);
     obj.categories = new repos.CategoriesRepository(obj, pgp);
     obj.owners = new repos.OwnersRepository(obj, pgp);
@@ -60,22 +58,25 @@ const pgp = pgPromise(initOptions);
 // Create the database instance:
 const db = pgp(config.DB_URI);
 
-db.connect()
-  .then(obj => {
-    winston.debug(`PG: Connected.`);
-    obj.done(); // success, release the connection;
-  })
-  .catch(error => {
-    winston.debug(`ERROR: ${error.message || error}`);
-  });
+// Test db connection.
+export const testConnection = async () => {
+  db.connect()
+    .then(obj => {
+      winston.debug(`PG: Connected.`);
+      obj.done(); // success, release the connection;
+    })
+    .catch(error => {
+      throw error;
+    });
 
-db.proc('version')
-  .then(data => {
-    winston.debug(`PG: ${data.version}`);
-  })
-  .catch(error => {
-    // connection-related error
-    winston.debug(`ERROR: ${error.message || error}`);
-  });
+  // Show PostgreSQL version after connected.
+  db.proc('version')
+    .then(data => {
+      winston.debug(`PG: ${data.version}`);
+    })
+    .catch(error => {
+      throw error;
+    });
+};
 
 export default db;

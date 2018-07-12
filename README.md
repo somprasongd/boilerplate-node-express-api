@@ -1,6 +1,6 @@
-# boilerplate-node-express-api
+# Example with mongoose
 
-Boilerplate APIs with express
+Use pg-promise to connect PostgreSQL
 
 ## Folder Structure
 
@@ -13,10 +13,11 @@ Boilerplate APIs with express
 ------------controllers # handler functions for each route to handle req, res
 ------------helpers # helper functions
 ------------middlewares # routes middlewares such as authorization middlware
-------------models # ORM files
+------------repositories # manage SQL each table
 ------------routes # api routes, use file name to api URI (/api/[filename])
 ------------index.js # export all router (express.Router())
 --------/config # config variables
+------------db.js # connect to database
 ------------development.js # config in dev mode
 ------------index.js # export this module with match environtment
 ------------production.js # config in prod mode
@@ -24,7 +25,6 @@ Boilerplate APIs with express
 ------------swagger.json # swagger config file
 --------/startup # startup app module
 ------------config.js # validate config variables, if not have exit app
-------------db.js # connect to database
 ------------index.js # export this module
 ------------logging.js # config winston log
 ------------middlewares.js # handle express middlewares
@@ -46,15 +46,16 @@ Boilerplate APIs with express
 --------/api # api routes
 ------------helpers # helper functions
 ------------middlewares # routes middlewares such as authorization middlware
-------------models # ORM files
 ------------resources # api routes, use directory name to api URI (/api/[dirname])
 ----------------routes1 # /api/routes1
 --------------------index.js # export router in routes1.router.js
 --------------------routes1.controllers.js # handler functions for each route to handle req, res
+--------------------routes1.repository.js # handler SQL from controller
 --------------------routes1.router.js # handler router for /api/routes1
 ----------------routes2 # /api/routes2
 --------------------index.js # export router in routes2.router.js
 --------------------routes2.controllers.js # handler functions for each route to handle req, res
+--------------------routes2.repository.js # handler SQL from controller
 --------------------routes2.router.js # handler router for /api/routes2
 ------------index.js # export all router (express.Router())
 ```
@@ -81,95 +82,123 @@ fs.readdirSync(PATH)
 
 ```javascript
 export default {
-  // connect to mongodb
-  DB_URI: "mongodb://username:password@host:port/database"
-  // or connect to postgresql
-  // DB_URL: 'postgres://username:password@host:port/database'
+  DB_URI: "postgres://postgres:postgres@localhost:5432/demo"
 };
 ```
 
 - In production mode set environtment to `appName_DB_URI`
 
-### Step 2: Connect to Database
+### Step 2: Connect to MongoDB
 
-- Install package such as `mongoose` or `pg-promise`: `npm i -S mongoose`
+- Install pg-promise: `npm i -S pg-promise`
 
-- Open file `./src/startup/db.js` and insert code following package document that you used:
+- Open file `./src/config/db.js` and write code like this:
 
 ```javascript
-// ./src/startup/db.js
-// import package here
+// ./src/config/db.js
+import pgPromise from "pg-promise";
 import winston from "winston";
-import config from "../config";
+import config from ".";
+import repos from "../api/repositories";
 
-export default () => {
-  // add connection code here
-  // connect to config.DB_URI
-  // log status with winston
+// pg-promise initialization options...
+const initOptions = {
+  receive(data, result, e) {
+    // convert column from xxx_yy to xxxYy
+    camelizeColumns(data);
+  },
+  query(e) {
+    // show SQL to console
+    winston.info(`QUERY: ${e.query}`);
+  },
+  connect(client, dc, useCount) {
+    // const cp = client.connectionParameters;
+    winston.info(`Connected to database`);
+  },
+  disconnect(client, dc) {
+    // const cp = client.connectionParameters;
+    winston.info(`Disconnecting from database`);
+  },
+  error(error, e) {
+    if (e.cn) {
+      // A connection-related error;
+      winston.debug(`CN: ${e.cn}`);
+      winston.debug(`EVENT: ${error.message || error}`);
+    }
+  },
+  extend(obj, dc) {
+    // Extending the database protocol with our custom repositories;
+    obj.users = new repos.UsersRepository(obj, pgp);
+    obj.categories = new repos.CategoriesRepository(obj, pgp);
+    obj.owners = new repos.OwnersRepository(obj, pgp);
+    obj.pets = new repos.PetsRepository(obj, pgp);
+  }
 };
+
+const camelizeColumns = data => {
+  const template = data[0];
+  if (!template) return;
+  Object.keys(template).forEach(prop => {
+    const camel = pgPromise.utils.camelize(prop);
+    if (!(camel in template)) {
+      for (let i = 0; i < data.length; i += 1) {
+        const d = data[i];
+        d[camel] = d[prop];
+        delete d[prop];
+      }
+    }
+  });
+};
+
+// Load and initialize pg-promise:
+const pgp = pgPromise(initOptions);
+
+// Create the database instance:
+const db = pgp(config.DB_URI);
+
+// Test db connection.
+export const testConnection = async () => {
+  db.connect()
+    .then(obj => {
+      winston.debug(`PG: Connected.`);
+      obj.done(); // success, release the connection;
+    })
+    .catch(error => {
+      throw error;
+    });
+
+  // Show PostgreSQL version after connected.
+  db.proc("version")
+    .then(data => {
+      winston.debug(`PG: ${data.version}`);
+    })
+    .catch(error => {
+      throw error;
+    });
+};
+
+export default db;
 ```
 
-### Step 3: Create Model
+### Step 3: Create Repositories
 
-- Create new model in `./src/api/models`, if have ORM
+- Example create `PetsRepository` in `./src/api/repositories/pets.js`.
 
 ```javascript
-let pets = [
-  {
-    id: 1,
-    name: "admin",
-    category: "dog",
-    breed: "ไทย",
-    age: "senior"
-  },
-  {
-    id: 2,
-    name: "tamp",
-    category: "dog",
-    breed: "ไทย - บางแก้ว",
-    age: "adult"
-  },
-  {
-    id: 3,
-    name: "snow",
-    category: "dog",
-    breed: "ไทย - บางแก้ว",
-    age: "adult"
+// ./src/api/repositories/pet.js
+import Repository from "../helpers/repository";
+
+export default class PetsRepository extends Repository {
+  constructor(db, pgp) {
+    // pets is table name in database
+    // {categoryId: "category_id", ownerId: "owner_id"} is key map
+    // categoryId is property name in json must convert to cloumn name (category_id) in database before execute.
+    super(db, pgp, "pets", {
+      categoryId: "category_id",
+      ownerId: "owner_id"
+    });
   }
-];
-
-export const create = (name, category, breed, age) => {
-  const pet = {
-    id: pets[pets.length - 1].id + 1,
-    name,
-    category,
-    breed,
-    age
-  };
-  pets.push(pet);
-  return pet;
-};
-
-export const update = (id, name, category, breed, age) => {
-  let pet = pets.find(u => u.id === id);
-  pet = {
-    ...pet,
-    name,
-    category,
-    breed,
-    age
-  };
-  return pet;
-};
-
-export const findAll = () => pets;
-
-export const findById = id => pets.find(pet => pet.id === id);
-
-export const remove = id => {
-  pets = pets.filter(pet => pet.id !== id);
-  return pets;
-};
+}
 ```
 
 ### Step 4: Create CRUD API
@@ -178,7 +207,7 @@ export const remove = id => {
 
 ```
 POST   /api/pets { name, category, breed, age, tags } -- create new pet with auth
-GET    /api/pets -- get all pets by everyone
+GET    /api/pets -- get all pets with auth
 
 GET    /api/pets/:id -- get pet by id with auth, validate ObjectId
 PUT    /api/pets/:id { name, category, breed, age, tags } -- update pet by id with auth, validate ObjectId
@@ -190,105 +219,136 @@ DELETE /api/pets/:id -- delete pet by id with auth, validate ObjectId
 ```javascript
 // ./src/api/routes/pets.js
 import express from "express";
-import Joi from "joi";
 import * as controller from "../controllers/pets";
-import admin from "../middlewares/admin"; // use for validate is admin?
 import auth from "../middlewares/auth"; // use for auth with JWT
 import paginate from "../middlewares/paginate"; // use for paginations
-import validate from "../middlewares/validate"; // use for need to validate body
 import validateObjectId from "../middlewares/validateObjectId"; // use for validate id format
 
 export const router = express.Router();
 
 router
   .route("/")
-  .post([auth, validate(validateBody)], controller.create)
-  .get(paginate, controller.findAll);
+  .post(auth, controller.create)
+  .get([auth, paginate], controller.findAll);
 
 router
   .route("/:id")
   .get([auth, validateObjectId], controller.findOne)
-  .delete([auth, admin, validateObjectId], controller.remove)
-  .put([auth, validate(validateBody), validateObjectId], controller.update);
-
-function validateBody(body) {
-  const schema = Joi.object().keys({
-    name: Joi.string().required(),
-    category: Joi.string().required(),
-    breed: Joi.string().required(),
-    age: Joi.string().required()
-  });
-  const { value, error } = Joi.validate(body, schema);
-  if (error && error.details) {
-    return { error };
-  }
-  return { value };
-}
+  .delete([auth, validateObjectId], controller.remove)
+  .put([auth, validateObjectId], controller.update);
 ```
 
 ### Step 5: Create controller
 
-- Create new file `./src/api/controllers/examples.js`
+- Create new file `./src/api/controllers/pets.js`
 
 ```javascript
-// ./src/api/controllers/examples.js
-import * as Pet from "../models/pet"; // replace with your model
-import paginate from "../helpers/paginate";
+// ./src/api/controllers/pets.js
+import Joi from "joi";
+import db from "../../config/db";
+import paginate from "../helpers/paginate.js";
 
 export const create = async (req, res) => {
-  const { name, category, breed, age } = req.body;
-  const data = await Promise.resolve(Pet.create(name, category, breed, age)); // insert
-  return res.json(data);
+  const schema = Joi.object().keys({
+    name: Joi.string()
+      .min(2)
+      .max(50)
+      .required(),
+    categoryId: Joi.number().required(),
+    breed: Joi.string().required(),
+    age: Joi.string().required(),
+    ownerId: Joi.number().required()
+  });
+  const { error, value } = Joi.validate(req.body, schema);
+  if (error)
+    return res
+      .status(400)
+      .json({ error: { message: error.details[0].message } });
+
+  const pet = {
+    name: value.name,
+    breed: value.breed,
+    age: value.age,
+    category_id: value.categoryId,
+    owner_id: value.ownerId
+  };
+
+  // use transactions
+  const result = await db.tx(async t => {
+    const data = await t.pets.create(pet);
+    await t.owners.incPetCount(pet.owner_id);
+    return data;
+  });
+
+  res.send(result);
 };
 
 export const findAll = async (req, res) => {
   const { limit, offset, page } = req.query;
-  // query with offset and limit
-  let datas = new Promise(resolve =>
-    resolve(Pet.findAll().slice(offset, limit + offset))
-  );
-  // count with same query criteria
-  let counts = new Promise(resolve => resolve(Pet.findAll().length));
-  [datas, counts] = await Promise.all([datas, counts]);
+  // task use for make multiple sql in same connection.
+  const { datas, counts } = await db.task(async t => {
+    const p1 = t.manyOrNone(
+      "select * from pets offset $<offset> limit $<limit>",
+      {
+        offset,
+        limit
+      }
+    );
+    const p2 = t.one("SELECT count(*) FROM pets", [], a => +a.count);
+    const [datas, counts] = await Promise.all([p1, p2]);
+    return { datas, counts };
+  });
+
   const results = paginate(datas, counts, limit, offset, page);
   res.send(results);
 };
 
 export const findOne = async (req, res) => {
-  const { id } = req.params;
-  // find by id
-  const data = await Promise.resolve(Pet.findById(+id));
-  if (!data) {
-    return res.status(404).json({ error: { message: "could not find data" } });
-  }
-  return res.json(data);
+  const pet = await db.pets.findById(req.params.id);
+
+  if (!pet)
+    return res
+      .status(404)
+      .json({ error: { message: "The pet with the given ID was not found." } });
+
+  res.send(pet);
 };
 
 export const remove = async (req, res) => {
-  const { id } = req.params;
-  // find by id and remove
-  const user = await Promise.resolve(Pet.findById(+id));
-  if (!user) {
-    return res.status(404).json({ error: { message: "could not find data" } });
-  }
-  const data = await Promise.resolve(Pet.remove(+id));
-  if (!data) {
-    return res.status(404).json({ error: { message: "could not find data" } });
-  }
-  return res.json(data);
+  const pet = await db.pets.remove(req.params.id);
+
+  if (!pet)
+    return res
+      .status(404)
+      .json({ error: { message: "The pet with the given ID was not found." } });
+
+  res.status(204).end();
 };
 
 export const update = async (req, res) => {
-  const { id } = req.params;
-  // find by id and update
-  const user = await Promise.resolve(Pet.findById(+id));
-  if (!user) {
-    return res.status(404).json({ error: { message: "could not find data" } });
-  }
-  const { name, category, breed, age } = req.body;
-  const data = await Promise.resolve(
-    Pet.update(id, name, category, breed, age)
-  );
-  return res.json(data);
+  const schema = {
+    name: Joi.string()
+      .min(2)
+      .max(50)
+      .optional(),
+    categoryId: Joi.number().optional(),
+    breed: Joi.string().optional(),
+    age: Joi.string().optional(),
+    ownerId: Joi.number().optional()
+  };
+
+  const { error, value } = Joi.validate(req.body, schema);
+  if (error)
+    return res
+      .status(400)
+      .json({ error: { message: error.details[0].message } });
+
+  const pet = await db.pets.update(req.params.id, value);
+  if (!pet)
+    return res
+      .status(404)
+      .json({ error: { message: "The pet with the given ID was not found." } });
+
+  res.send(pet);
 };
 ```
