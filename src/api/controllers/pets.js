@@ -26,7 +26,7 @@ export const create = async (req, res) => {
 
   const result = await db.tx(async t => {
     const data = await t.pet.create(pet);
-    await t.user.incPetCount(pet.owner_id);
+    await t.owner.incPetCount(pet.owner_id);
     return data;
   });
 
@@ -36,11 +36,11 @@ export const create = async (req, res) => {
 export const findAll = async (req, res) => {
   const { limit, offset, page } = req.query;
   const { datas, counts } = await db.task(async t => {
-    const p1 = t.manyOrNone('select * from pet offset $<offset> limit $<limit>', {
+    const p1 = t.manyOrNone('select * from pets offset $<offset> limit $<limit>', {
       offset,
       limit,
     });
-    const p2 = t.one('SELECT count(*) FROM pet', [], a => +a.count);
+    const p2 = t.one('SELECT count(*) FROM pets', [], a => +a.count);
     const [datas, counts] = await Promise.all([p1, p2]);
     return { datas, counts };
   });

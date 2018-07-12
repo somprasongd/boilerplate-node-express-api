@@ -13,11 +13,11 @@ export const create = async (req, res) => {
 
 export const findAll = async (req, res) => {
   const { limit, offset, page } = req.query;
-  let categories = await db.manyOrNone('select * from category offset $<offset> limit $<limit>', {
+  let categories = await db.manyOrNone('select * from categories offset $<offset> limit $<limit>', {
     offset,
     limit,
   });
-  let counts = await db.one('SELECT count(*) FROM category', [], a => +a.count);
+  let counts = await db.one('SELECT count(*) FROM categories', [], a => +a.count);
   [categories, counts] = await Promise.all([categories, counts]);
   const results = paginate(categories, counts, limit, offset, page);
   res.send(results);

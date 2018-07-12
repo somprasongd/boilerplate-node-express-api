@@ -13,11 +13,11 @@ export const create = async (req, res) => {
 
 export const findAll = async (req, res) => {
   const { limit, offset, page } = req.query;
-  let categories = await db.manyOrNone('select * from owner offset $<offset> limit $<limit>', {
+  let categories = await db.manyOrNone('select * from owners offset $<offset> limit $<limit>', {
     offset,
     limit,
   });
-  let counts = await db.one('SELECT count(*) FROM owner', [], a => +a.count);
+  let counts = await db.one('SELECT count(*) FROM owners', [], a => +a.count);
   [categories, counts] = await Promise.all([categories, counts]);
   const results = paginate(categories, counts, limit, offset, page);
   res.send(results);
