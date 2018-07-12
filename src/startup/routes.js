@@ -21,7 +21,7 @@ export default app => {
 
   // handle 404
   app.use((req, res, next) => {
-    const error = new Error('Not found');
+    const error = new Error();
     error.message = 'Invalid route';
     error.status = 404;
     next(error);
@@ -30,7 +30,7 @@ export default app => {
   // handle error
   app.use((error, req, res, next) => {
     // Log the exception
-    winston.error(error.message, error);
+    winston.error(`${error.message}\n${error}`);
     res.status(error.status || 500);
     return res.json({
       error: {
