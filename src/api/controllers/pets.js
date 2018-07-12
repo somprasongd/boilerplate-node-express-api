@@ -25,8 +25,8 @@ export const create = async (req, res) => {
   };
 
   const result = await db.tx(async t => {
-    const data = await t.pet.create(pet);
-    await t.owner.incPetCount(pet.owner_id);
+    const data = await t.pets.create(pet);
+    await t.owners.incPetCount(pet.owner_id);
     return data;
   });
 
@@ -50,7 +50,7 @@ export const findAll = async (req, res) => {
 };
 
 export const findOne = async (req, res) => {
-  const pet = await db.pet.findById(req.params.id);
+  const pet = await db.pets.findById(req.params.id);
 
   if (!pet) return res.status(404).json({ error: { message: 'The pet with the given ID was not found.' } });
 
@@ -58,7 +58,7 @@ export const findOne = async (req, res) => {
 };
 
 export const remove = async (req, res) => {
-  const pet = await db.pet.remove(req.params.id);
+  const pet = await db.pets.remove(req.params.id);
 
   if (!pet) return res.status(404).json({ error: { message: 'The pet with the given ID was not found.' } });
 
@@ -79,21 +79,9 @@ export const update = async (req, res) => {
 
   const { error, value } = Joi.validate(req.body, schema);
   if (error) return res.status(400).json({ error: { message: error.details[0].message } });
-  console.log(value);
 
-  const pet = await db.task(async t => {
-    let pet = await t.pet.findById(req.params.id);
-
-    if (!pet) {
-      const error = new Error();
-      error.message = 'The pet with the given ID was not found.';
-      error.status = 404;
-      throw error;
-    }
-
-    pet = await t.pet.update(req.params.id, value);
-    return pet;
-  });
+  const pet = await db.pets.update(req.params.id, value);
+  if (!pet) return res.status(404).json({ error: { message: 'The pet with the given ID was not found.' } });
 
   res.send(pet);
 };

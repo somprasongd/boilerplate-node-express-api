@@ -6,7 +6,7 @@ export const create = async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
-  const owner = await db.owner.create(req.body);
+  const owner = await db.owners.create(req.body);
 
   res.send(owner);
 };
@@ -24,7 +24,7 @@ export const findAll = async (req, res) => {
 };
 
 export const findOne = async (req, res) => {
-  const owner = await db.owner.findById(req.params.id);
+  const owner = await db.owners.findById(req.params.id);
 
   if (!owner) return res.status(404).json({ error: { message: 'The owner with the given ID was not found.' } });
 
@@ -32,7 +32,7 @@ export const findOne = async (req, res) => {
 };
 
 export const remove = async (req, res) => {
-  const owner = await db.owner.remove(req.params.id);
+  const owner = await db.owners.remove(req.params.id);
 
   if (!owner) return res.status(404).json({ error: { message: 'The owner with the given ID was not found.' } });
 
@@ -40,14 +40,11 @@ export const remove = async (req, res) => {
 };
 
 export const update = async (req, res) => {
-  const { error } = validate(req.body);
+  const { error, value } = validate(req.body);
   if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
-  let owner = await db.owner.findById(req.params.id);
-
+  const owner = await db.owners.update(req.params.id, value);
   if (!owner) return res.status(404).json({ error: { message: 'The owner with the given ID was not found.' } });
-
-  owner = await db.owner.update(req.params.id, req.body);
 
   res.send(owner);
 };

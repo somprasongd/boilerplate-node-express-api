@@ -1,11 +1,11 @@
-import User from './user';
-import Category from './category';
-import Owner from './owner';
-import Pet from './pet';
+import UsersRepository from './user';
+import CategoriesRepository from './category';
+import OwnersRepository from './owner';
+import PetsRepository from './pet';
 
 export default {
-  User,
-  Category,
-  Owner,
-  Pet,
+  UsersRepository,
+  CategoriesRepository,
+  OwnersRepository,
+  PetsRepository,
 };

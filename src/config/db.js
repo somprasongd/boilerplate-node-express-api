@@ -12,14 +12,11 @@ const initOptions = {
     winston.info(`QUERY: ${e.query}`);
   },
   connect(client, dc, useCount) {
-    console.log(client);
-
-    const cp = client.connectionParameters;
-
+    // const cp = client.connectionParameters;
     winston.info(`Connected to database`);
   },
   disconnect(client, dc) {
-    const cp = client.connectionParameters;
+    // const cp = client.connectionParameters;
     winston.info(`Disconnecting from database`);
   },
   // global event notification;
@@ -35,15 +32,16 @@ const initOptions = {
   },
   // Extending the database protocol with our custom repositories;
   extend(obj, dc) {
-    obj.user = new repos.User(obj, pgp);
-    obj.category = new repos.Category(obj, pgp);
-    obj.owner = new repos.Owner(obj, pgp);
-    obj.pet = new repos.Pet(obj, pgp);
+    obj.users = new repos.UsersRepository(obj, pgp);
+    obj.categories = new repos.CategoriesRepository(obj, pgp);
+    obj.owners = new repos.OwnersRepository(obj, pgp);
+    obj.pets = new repos.PetsRepository(obj, pgp);
   },
 };
 
 const camelizeColumns = data => {
   const template = data[0];
+  if (!template) return;
   Object.keys(template).forEach(prop => {
     const camel = pgPromise.utils.camelize(prop);
     if (!(camel in template)) {
@@ -64,6 +62,7 @@ const db = pgp(config.DB_URI);
 
 db.connect()
   .then(obj => {
+    winston.debug(`PG: Connected.`);
     obj.done(); // success, release the connection;
   })
   .catch(error => {

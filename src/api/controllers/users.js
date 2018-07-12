@@ -7,14 +7,14 @@ export const signup = async (req, res) => {
   const { error, value } = validate(req.body);
   if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
-  let user = await db.user.findByEmail(req.body.email);
+  let user = await db.users.findByEmail(req.body.email);
   if (user) return res.status(400).json({ error: { message: 'User already registered.' } });
 
   user = { name: value.name, email: value.email };
   user.is_admin = value.isAdmin;
   user.password = await bcrypt.hash(value.password);
 
-  user = await db.user.create(user);
+  user = await db.users.create(user);
 
   const token = generateAuthToken(user);
   const { id, name, email } = user;
@@ -22,7 +22,7 @@ export const signup = async (req, res) => {
 };
 
 export const findMe = async (req, res) => {
-  const user = await db.user.findById(req.user._id);
+  const user = await db.users.findById(req.users._id);
   const { id, name, email } = user;
   res.json({ id, name, email });
 };

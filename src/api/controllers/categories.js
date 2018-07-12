@@ -6,7 +6,7 @@ export const create = async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
-  const category = await db.category.create({ name: req.body.name });
+  const category = await db.categories.create({ name: req.body.name });
 
   res.send(category);
 };
@@ -24,7 +24,7 @@ export const findAll = async (req, res) => {
 };
 
 export const findOne = async (req, res) => {
-  const category = await db.category.findById(req.params.id);
+  const category = await db.categories.findById(req.params.id);
 
   if (!category) return res.status(404).json({ error: { message: 'The category with the given ID was not found.' } });
 
@@ -32,7 +32,7 @@ export const findOne = async (req, res) => {
 };
 
 export const remove = async (req, res) => {
-  const category = await db.category.remove(req.params.id);
+  const category = await db.categories.remove(req.params.id);
 
   if (!category) return res.status(404).json({ error: { message: 'The category with the given ID was not found.' } });
 
@@ -40,14 +40,11 @@ export const remove = async (req, res) => {
 };
 
 export const update = async (req, res) => {
-  const { error } = validate(req.body);
+  const { error, value } = validate(req.body);
   if (error) return res.status(400).json({ error: { message: error.details[0].message } });
 
-  let category = await db.category.findById(req.params.id);
-
+  const category = await db.categories.update(req.params.id, value);
   if (!category) return res.status(404).json({ error: { message: 'The category with the given ID was not found.' } });
-
-  category = await db.category.update(req.params.id, req.body);
 
   res.send(category);
 };

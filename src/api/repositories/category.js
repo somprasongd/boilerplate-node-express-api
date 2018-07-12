@@ -1,6 +1,6 @@
 import Repository from '../helpers/repository';
 
-export default class CategoryRepository extends Repository {
+export default class CategoriesRepository extends Repository {
   constructor(db, pgp) {
     super(db, pgp, 'categories', {});
   }

@@ -1,6 +1,6 @@
 import Repository from '../helpers/repository';
 
-export default class OwnerRepository extends Repository {
+export default class OwnersRepository extends Repository {
   constructor(db, pgp) {
     super(db, pgp, 'owners', {});
   }
