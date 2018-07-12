@@ -1,4 +1,4 @@
-# Example with mongoose
+# Example with pg-promise
 
 Use pg-promise to connect PostgreSQL
 
