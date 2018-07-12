@@ -30,7 +30,10 @@ export default app => {
   // handle error
   app.use((error, req, res, next) => {
     // Log the exception
-    winston.error(`${error.message}\n${error}`);
+    winston.error(error.message);
+    if (app.get('env') === 'development') {
+      console.log(error);
+    }
     res.status(error.status || 500);
     return res.json({
       error: {
