@@ -13,7 +13,7 @@ export default (req, res, next) => {
     req.query.page = undefined;
   } else if (req.query.hasOwnProperty('page')) {
     req.query.page = page;
-    req.query.offset = (page - 1) * limit;
+    req.query.offset = (page - 1) * req.query.limit;
   } else {
     req.query.offset = 0;
     req.query.page = 1;
