@@ -4,7 +4,7 @@
   "description": "Boilerplate APIs with express",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.js --exec babel-node -e js",
+    "start": "export DEBUG=app:*||set DEBUG=app:*&&nodemon src/index.js --exec babel-node -e js",
     "clean": "rm -rf dist",
     "build": "npm run clean && mkdir dist && babel src -s -d dist --copy-files",
     "prod": "export NODE_ENV=production||set NODE_ENV=production&&npm run build&&node dist/index.js",
@@ -21,6 +21,7 @@
     "bcryptjs": "^2.4.3",
     "config": "^1.30.0",
     "cors": "^2.8.4",
+    "debug": "^3.1.0",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "express-async-errors": "^3.0.0",

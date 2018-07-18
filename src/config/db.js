@@ -1,7 +1,10 @@
+import debugFn from 'debug';
 import pgPromise from 'pg-promise';
 import winston from 'winston';
 import config from '.';
 import repos from '../api/repositories';
+
+const debug = debugFn('app:PGP');
 
 // pg-promise initialization options...
 const initOptions = {
@@ -11,15 +14,15 @@ const initOptions = {
   },
   query(e) {
     // show SQL to console
-    winston.info(`QUERY: ${e.query}`);
+    debug(`QUERY: ${e.query}`);
   },
   connect(client, dc, useCount) {
     // const cp = client.connectionParameters;
-    winston.info(`Connected to database`);
+    debug(`Connected to database`);
   },
   disconnect(client, dc) {
     // const cp = client.connectionParameters;
-    winston.info(`Disconnecting from database`);
+    debug(`Disconnecting from database`);
   },
   error(error, e) {
     if (e.cn) {
@@ -55,6 +58,9 @@ const camelizeColumns = data => {
 // Load and initialize pg-promise:
 const pgp = pgPromise(initOptions);
 
+// date 1082, timestamp 1114, timestampz 1184
+pgp.pg.types.setTypeParser(1082, s => s);
+
 // Create the database instance:
 const db = pgp(config.DB_URI);
 
@@ -80,3 +86,4 @@ export const testConnection = async () => {
 };
 
 export default db;
+export { pgp };
