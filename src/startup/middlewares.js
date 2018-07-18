@@ -15,4 +15,17 @@ export default app => {
   if (app.get('env') === 'development') {
     app.use(morgan('dev'));
   }
+
+  // Express behind proxies
+  app.set('trust proxy', 'loopback');
+
+  app.use((req, res, next) => {
+    req.getHost = function() {
+      return `${req.protocol}://${req.get('host')}`;
+    };
+    req.getUrl = function() {
+      return `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+    };
+    next();
+  });
 };
