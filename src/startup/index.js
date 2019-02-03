@@ -1,13 +1,13 @@
-import logging from './logging';
-import config from './config';
-import db from './db';
-import middlewares from './middlewares';
-import routes from './routes';
+import initLogging from '../config/logging';
+import { validateConfig } from '../config';
+import { createConnection } from '../db';
+import initMiddlewares from './middlewares';
+import initRoutes from './routes';
 
 export default app => {
-  logging(app); // setup winston log
-  config(); // validate config
-  db(); // connect to db
-  middlewares(app); // handle middlewares
-  routes(app); // handle routes
+  initLogging(app); // setup winston log
+  validateConfig(); // validate config
+  createConnection(); // connect to db
+  initMiddlewares(app); // handle middlewares
+  initRoutes(app); // handle routes
 };

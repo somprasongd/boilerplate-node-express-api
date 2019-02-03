@@ -28,15 +28,16 @@ export default app => {
   });
 
   // handle error
-  app.use((error, req, res, next) => {
+  app.use((error, req, res) => {
     // Log the exception
-    winston.error(error.message);
-    if (app.get('env') === 'development') {
+    winston.error(`${error.status || 500} - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+    if (res.status === 500 && app.get('env') === 'development') {
       console.log(error);
     }
-    res.status(error.status || 500);
-    return res.json({
+
+    return res.status(error.status || 500).json({
       error: {
+        status: res.status,
         message: error.message,
       },
     });
