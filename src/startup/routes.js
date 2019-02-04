@@ -29,15 +29,15 @@ export default app => {
 
   // handle error
   app.use((error, req, res, next) => {
-    res.status(error.status || 500);
+    const status = error.status || 500;
     // Log the exception
-    winston.error(`${res.status} - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
-    if (res.status === 500 && app.get('env') === 'development') {
+    winston.error(`${status} - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+    if (status === 500 && app.get('env') === 'development') {
       console.log(error);
     }
-    return res.json({
+    return res.status(status).json({
       error: {
-        status: res.status,
+        status,
         message: error.message,
       },
     });
