@@ -1,4 +1,4 @@
-import bcrypt from '../helpers/bcrypt';
+import bcrypt from '../../helpers/bcrypt';
 import * as User from '../models/user';
 
 export const signup = async (req, res) => {

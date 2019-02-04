@@ -3,22 +3,21 @@ import Joi from 'joi';
 import * as controller from '../controllers/pets';
 import admin from '../middlewares/admin';
 import auth from '../middlewares/auth'; // use for auth with JWT
-import paginate from '../middlewares/paginate'; // use for paginations
-import validate from '../middlewares/validate'; // use for need to validate body
+import parsePage from '../middlewares/parsePage'; // use for paginations
 import validateObjectId from '../middlewares/validateObjectId'; // use for validate id format
 
 export const router = express.Router();
 
 router
   .route('/')
-  .post([auth, validate(validateBody)], controller.create)
-  .get(paginate, controller.findAll);
+  .post([auth], controller.create)
+  .get(parsePage, controller.findAll);
 
 router
   .route('/:id')
   .get([auth, validateObjectId], controller.findOne)
   .delete([auth, admin, validateObjectId], controller.remove)
-  .put([auth, validate(validateBody), validateObjectId], controller.update);
+  .put([auth, validateObjectId], controller.update);
 
 function validateBody(body) {
   const schema = Joi.object().keys({

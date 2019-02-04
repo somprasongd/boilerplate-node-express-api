@@ -1,7 +1,7 @@
 // import package here
 import winston from 'winston';
 import config from '../config';
-import startupEvents from '../helper/startup-events';
+import startupEvents from '../helpers/startup-events';
 
 let db;
 
@@ -11,7 +11,7 @@ const createConnection = () => {
   // log status with winston
   setTimeout(() => {
     db = {};
-    winston.info(`db connected to ${config.DB_URI}`);
+    winston.info(`db connected to ${config.db.uri}`);
     startupEvents.emit('db-connected');
   }, 500);
 };

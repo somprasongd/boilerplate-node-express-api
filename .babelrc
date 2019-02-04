@@ -2,10 +2,10 @@
   "presets": [
     ["env", {
       "targets": {
-        "node": "10.1"
+        "node": "10.15.1"
       }
     }],
     "stage-0"
   ],
   "plugins": []
-} 
+}

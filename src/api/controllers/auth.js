@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import bcrypt from '../helpers/bcrypt';
+import bcrypt from '../../helpers/bcrypt';
 import * as User from '../models/user';
 
 export const login = async (req, res) => {

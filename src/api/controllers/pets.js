@@ -1,5 +1,5 @@
 import * as Pet from '../models/pet';
-import paginate from '../helpers/paginate';
+import pagination from '../../helpers/pagination';
 
 export const create = async (req, res) => {
   const { name, category, breed, age } = req.body;
@@ -14,7 +14,7 @@ export const findAll = async (req, res) => {
   // count with same query criteria
   let counts = new Promise(resolve => resolve(Pet.findAll().length));
   [datas, counts] = await Promise.all([datas, counts]);
-  const results = paginate(datas, counts, limit, offset, page);
+  const results = pagination(datas, counts, limit, offset, page);
   res.send(results);
 };
 
