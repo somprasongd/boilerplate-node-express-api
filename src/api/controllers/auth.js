@@ -1,28 +1,8 @@
 import Joi from 'joi';
 import bcrypt from '../../helpers/bcrypt';
-import * as User from '../models/user';
+import User from '../../db/models/user';
 
-export const login = async (req, res) => {
-  const { error } = validate(req.body);
-  if (error) return res.status(400).json({ error: { message: error.details[0].message } });
-
-  const user = await User.findByEmail(req.body.email);
-  if (!user) return res.status(400).json({ error: { message: 'Invalid email or password.' } });
-
-  const validPassword = await bcrypt.compare(req.body.password, user.password);
-
-  if (!validPassword) return res.status(400).json({ error: { message: 'Invalid email or password.' } });
-
-  const token = User.generateAuthToken(user);
-  const { id, name, email } = user;
-  res.send({ id, name, email, token });
-};
-
-export const logout = async (req, res) => {
-  res.send(true);
-};
-
-function validate(req) {
+export const login = async (req, res, next) => {
   const schema = {
     email: Joi.string()
       .min(5)
@@ -34,6 +14,35 @@ function validate(req) {
       .max(255)
       .required(),
   };
+  const { error, value } = Joi.validate(req.body, schema);
+  if (error) {
+    const err = new Error(error.details[0].message);
+    err.status = 400;
+    return next(err);
+  }
 
-  return Joi.validate(req, schema);
-}
+  const { email, password } = value;
+
+  const user = await User.findByEmail(email);
+  if (!user) {
+    const err = new Error('Invalid email or password.');
+    err.status = 400;
+    return next(err);
+  }
+
+  const validPassword = await bcrypt.compare(password, user.password);
+
+  if (!validPassword) {
+    const err = new Error('Invalid email or password.');
+    err.status = 400;
+    return next(err);
+  }
+
+  const token = User.generateAuthToken(user);
+  const { id, name } = user;
+  res.send({ id, name, email, token });
+};
+
+export const logout = async (req, res) => {
+  res.send(true);
+};

@@ -21,6 +21,7 @@ export default app => {
 
   // handle 404
   app.use((req, res, next) => {
+    console.log('handle 404');
     const error = new Error();
     error.message = 'Invalid route';
     error.status = 404;
@@ -28,16 +29,16 @@ export default app => {
   });
 
   // handle error
-  app.use((error, req, res) => {
+  app.use((error, req, res, next) => {
+    const status = error.status || 500;
     // Log the exception
-    winston.error(`${error.status || 500} - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
-    if (res.status === 500 && app.get('env') === 'development') {
+    winston.error(`${status} - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+    if (status === 500 && app.get('env') === 'development') {
       console.log(error);
     }
-
     return res.status(error.status || 500).json({
       error: {
-        status: res.status,
+        status,
         message: error.message,
       },
     });
