@@ -1,6 +1,3 @@
-import jwt from 'jsonwebtoken';
-import config from '../../config';
-
 const users = [
   {
     id: 1,
@@ -39,11 +36,6 @@ class User {
     return this;
   }
 
-  static generateAuthToken(user) {
-    const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, config.api.jwtSecretKey);
-    return token;
-  }
-
   static findById(id) {
     return users.find(user => user.id === id);
   }
@@ -54,24 +46,3 @@ class User {
 }
 
 export default User;
-
-// export const generateAuthToken = user => {
-//   const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, config.JWT_SECRET);
-//   return token;
-// };
-
-// export const create = (name, email, password, isAdmin) => {
-//   const user = {
-//     id: users[users.length - 1].id + 1,
-//     name,
-//     email,
-//     password,
-//     isAdmin,
-//   };
-//   users.push(user);
-//   return user;
-// };
-
-// export const findById = id => users.find(user => user.id === id);
-
-// export const findByEmail = email => users.find(user => user.email === email);

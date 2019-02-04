@@ -1,5 +1,4 @@
-import jwt from 'jsonwebtoken';
-import config from '../../../config';
+import { verifyAuthToken } from '../../../helpers/token';
 
 export const isAuthen = (req, res, next) => {
   const token = req.header('x-auth-token');
@@ -10,7 +9,7 @@ export const isAuthen = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, config.api.jwtSecretKey);
+    const decoded = verifyAuthToken(token);
     req.user = decoded;
     next();
   } catch (ex) {

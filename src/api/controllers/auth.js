@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import bcrypt from '../../helpers/bcrypt';
 import User from '../../db/models/user';
+import { generateAuthToken } from '../../helpers/token';
 
 export const login = async (req, res, next) => {
   const schema = {
@@ -38,7 +39,7 @@ export const login = async (req, res, next) => {
     return next(err);
   }
 
-  const token = User.generateAuthToken(user);
+  const token = generateAuthToken(user);
   const { id, name } = user;
   res.send({ id, name, email, token });
 };
