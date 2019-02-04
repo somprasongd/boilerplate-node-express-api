@@ -73,3 +73,6 @@ typings/
 
 # babel build output
 dist
+
+# dev env
+nodemon.json

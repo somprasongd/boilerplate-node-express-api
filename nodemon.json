@@ -1,8 +1,0 @@
-{
-  "env": {
-    "DEBUG": "app:*",
-    "APPNAME_PORT": 3000,
-    "APPNAME_DB_URI": "postgres://user:password@localhost:5432/dbname",
-    "APPNAME_JWT_SECRET": "thisisascretkey"
-  }
-}

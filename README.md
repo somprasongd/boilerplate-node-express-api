@@ -73,6 +73,21 @@ fs.readdirSync(PATH)
   });
 ```
 
+## Development Mode
+
+- Create `nodemon.json` to config dev enviroments.
+
+```json
+{
+  "env": {
+    "DEBUG": "app:*",
+    "HOSCONNECT_PORT": 3000,
+    "HOSCONNECT_DB_URI": "postgres://postgres:postgres@localhost:5432/dbname",
+    "HOSCONNECT_JWT_SECRET": "thisisascretkey"
+  }
+}
+```
+
 ## How to connect DB
 
 ### Step 1: Config DB_URI
