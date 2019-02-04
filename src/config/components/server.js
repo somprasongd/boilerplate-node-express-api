@@ -20,7 +20,7 @@ const corsOptions = { origin: '*' };
 if (whitelist.length > 0) {
   corsOptions.origin = (origin, callback) => {
     // !origin: unblock REST tools or server-to-server requests
-    if (whitelist.indexOf(origin) !== -1) {
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
