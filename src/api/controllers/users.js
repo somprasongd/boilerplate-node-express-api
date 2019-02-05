@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import bcrypt from '../../helpers/bcrypt';
 import User from '../../db/models/user';
-import validateReq from '../../helpers/validateReq';
+import validateReqData from '../../helpers/validateReqData';
 
 export const signup = async (req, res, next) => {
   const schema = {
@@ -19,7 +19,7 @@ export const signup = async (req, res, next) => {
       .max(255)
       .required(),
   };
-  const { value } = validateReq(req.body, schema)(next);
+  const { value } = validateReqData(req.body, schema);
 
   let user = await User.findByEmail({ email: req.body.email });
   if (user) {

@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import bcrypt from '../../helpers/bcrypt';
 import User from '../../db/models/user';
-import validateReq from '../../helpers/validateReq';
+import validateReqData from '../../helpers/validateReqData';
 import { generateAuthToken } from '../../helpers/token';
 
 export const login = async (req, res, next) => {
@@ -16,7 +16,7 @@ export const login = async (req, res, next) => {
       .max(255)
       .required(),
   };
-  const { value } = validateReq(req.body, schema)(next);
+  const { value } = validateReqData(req.body, schema);
 
   const { email, password } = value;
 
