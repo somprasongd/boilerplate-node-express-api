@@ -5,6 +5,10 @@ import swaggerDocument from '../doc/swagger.json';
 import { apiRouter } from '../api';
 
 export default app => {
+  // home
+  app.get('/', (req, res) => {
+    res.send('OK');
+  });
   // api
   app.use('/api', apiRouter);
 
