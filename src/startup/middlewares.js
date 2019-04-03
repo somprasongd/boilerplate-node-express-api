@@ -17,6 +17,7 @@ export default app => {
   app.use(express.json()); // parse application/json
   app.use(express.urlencoded({ extended: true })); // parse application/x-www-form-urlencoded
   if (app.get('env') === 'production') {
+    // use morgan as express middleware to link winston and express
     app.use(morgan('combined', { stream: accessLogStream }));
     // log only 4xx and 5xx responses to console
     app.use(

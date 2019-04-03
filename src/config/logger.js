@@ -23,6 +23,7 @@ export default app => {
       new winston.transports.Console({
         level: 'debug',
         handleExceptions: true,
+        humanReadableUnhandledException: true,
         format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
       })
     );
@@ -65,8 +66,9 @@ export default app => {
   //  Write all logs error (and below) to console
   winston.add(
     new winston.transports.Console({
-      level: 'error',
+      level: 'info',
       handleExceptions: true,
+      humanReadableUnhandledException: true,
       format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
     })
   );
