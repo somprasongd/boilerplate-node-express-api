@@ -1,3 +1,5 @@
+// eslint-disable-next-line no-unused-vars
+import _ from './components/dotenv';
 import api from './components/api';
 import common from './components/common';
 import database from './components/database';
