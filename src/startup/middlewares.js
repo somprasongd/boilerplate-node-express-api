@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+import compression from 'compression';
 import morgan from 'morgan';
 import createGracefulShutdownMiddleware from 'express-graceful-shutdown';
 import config from '../config';
@@ -13,6 +14,7 @@ export default app => {
   app.use(cors(corsOptions));
   if (app.get('env') === 'production') {
     app.use(helmet());
+    app.use(compression());
   }
   app.use(express.json()); // parse application/json
   app.use(express.urlencoded({ extended: true })); // parse application/x-www-form-urlencoded
