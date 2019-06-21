@@ -4,6 +4,7 @@ import api from './components/api';
 import common from './components/common';
 import database from './components/database';
 import server from './components/server';
+import sentry from './components/sentry';
 
 // use Joi in each components
 // ['APPNAME_DB_URI', 'APPNAME_JWT_SECRET'].forEach(name => {
@@ -17,6 +18,9 @@ const config = {
   ...common,
   ...database,
   ...server,
+  ...sentry,
 };
+
+console.log(config);
 
 export default config;

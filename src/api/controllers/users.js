@@ -1,55 +1,32 @@
-import Joi from 'joi';
 import bcrypt from '../../helpers/bcrypt';
-import User from '../../db/models/user';
-import validateReqData from '../../helpers/validateReqData';
+import { generateAuthToken } from '../../helpers/token';
+import { invalidExceptionHandler, notFoundExceptionHandler } from '../../helpers/exceptionHandler';
+import db from '../../db';
+import { validateCreateUser } from '../validations/users';
+import { serializeUser } from '../serailizer/users';
 
-export const signup = async (req, res, next) => {
-  const schema = {
-    name: Joi.string()
-      .min(5)
-      .max(50)
-      .required(),
-    email: Joi.string()
-      .min(5)
-      .max(255)
-      .required()
-      .email(),
-    password: Joi.string()
-      .min(5)
-      .max(255)
-      .required(),
-  };
-  const { value } = validateReqData(req.body, schema);
+export const createUser = async (req, res) => {
+  const { name, email, password, isAdmin } = validateCreateUser(req.body);
 
-  let user = await User.findByEmail({ email: req.body.email });
-  if (user) {
-    const err = new Error('User already registered.');
-    err.status = 400;
-    return next(err);
-  }
+  let user = await db.User.findByEmail({ email });
 
-  const { name, email, password } = value;
-  user = new User(name, email, password);
+  if (user) return invalidExceptionHandler('User already registered.');
+
+  user = new db.User(name, email, password, isAdmin);
 
   user.password = await bcrypt.hash(password);
-  user = user.create();
+  user = await Promise.resolve(user.create());
 
-  const token = User.generateAuthToken(user);
-  const { id } = user;
-  res.send({ id, name, email, token });
+  const token = generateAuthToken(user);
+  const serialized = serializeUser(user);
+  res.send({ user: { ...serialized }, token });
 };
 
-export const findOne = async (req, res, next) => {
-  const user = await new Promise(resolve => {
-    setTimeout(() => {
-      resolve(User.findById(req.user.id));
-    }, 1000);
-  });
-  if (!user) {
-    const err = new Error('Invalid user Id');
-    err.status = 400;
-    return next(err);
-  }
-  const { id, name, email } = user;
-  res.send({ id, name, email });
+export const findMe = async (req, res) => {
+  const user = await Promise.resolve(db.User.findById(req.user.id));
+
+  if (!user) return notFoundExceptionHandler('The user with the given ID was not found.');
+
+  const serialized = serializeUser(user);
+  res.send(serialized);
 };

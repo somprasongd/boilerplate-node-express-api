@@ -1,0 +1,59 @@
+version: "2.4"
+
+services:
+  web:
+    image: nginx
+    ports:
+      - "8080:80"
+    # depends_on:
+    #   api:
+    #     # Version 3 no longer supports the condition form of depends_on.
+    #     condition: service_healthy
+
+  api:
+    image: boilerplate-node-express-api:${APPNAME_RELEASE}
+    build: .
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - 3000:3000
+    # healthcheck:
+    #   test: curl -f http://127.0.0.1:3000
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+  redis:
+    image: redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres
+    healthcheck:
+      test: pg_isready -U postgres -h 127.0.0.1
+
+  mongo:
+    image: mongo
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017 --quiet
+      # interval: 5s
+      # retries: 3
+
+  mysql:
+    image: mysql
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true

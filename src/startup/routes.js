@@ -1,7 +1,9 @@
-import winston from 'winston';
+import 'express-async-errors';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../doc/swagger.json';
 import { apiRouter } from '../api';
+import logger from '../logger';
+import { notFoundExceptionHandler } from '../helpers/exceptionHandler';
 
 export default app => {
   // home
@@ -24,9 +26,23 @@ export default app => {
 
   // handle 404
   app.use((req, res, next) => {
-    const error = new Error();
-    error.message = 'Invalid route';
-    error.status = 404;
-    next(error);
+    notFoundExceptionHandler('Invalid route');
+  });
+
+  // handle error
+  app.use((error, req, res, next) => {
+    const status = error.status || 500;
+    // Log the exception
+    const message = `${status} - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`;
+    logger.error(new Error(message));
+    if (status === 500 && app.get('env') === 'development') {
+      console.log(error);
+    }
+    return res.status(status).json({
+      error: {
+        status,
+        message: error.message,
+      },
+    });
   });
 };

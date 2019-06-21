@@ -5,7 +5,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import createGracefulShutdownMiddleware from 'express-graceful-shutdown';
 import config from '../config';
-import { accessLogStream } from '../config/logger';
+import { accessLogStream } from '../logger';
 
 export default app => {
   const { corsOptions, gracefulShutdownTimeout } = config.server;

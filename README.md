@@ -80,12 +80,23 @@ fs.readdirSync(PATH)
 ```json
 {
   "env": {
-    "DEBUG": "app:*",
-    "HOSCONNECT_PORT": 3000,
-    "HOSCONNECT_DB_URI": "postgres://postgres:postgres@localhost:5432/dbname",
-    "HOSCONNECT_JWT_SECRET": "thisisascretkey"
+    "APPNAME_RELEASE": "0.0.1",
+    "APPNAME_PORT": 3000,
+    "APPNAME_JWT_SECRET": "my-secret-key",
+    "APPNAME_DB_URI": "test",
+    "APPNAME_SENTRY_DNS": "https://publicKey@sentry.io/id"
   }
 }
+```
+
+- Or use dotenv by create file `.env`
+
+```text
+APPNAME_RELEASE=0.0.1
+APPNAME_PORT=3000
+APPNAME_JWT_SECRET=my-secret-key
+APPNAME_DB_URI=test
+AAPPNAME_SENTRY_DNS=https://publicKey@sentry.io/id
 ```
 
 ## How to connect DB

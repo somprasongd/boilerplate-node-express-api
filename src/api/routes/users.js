@@ -6,5 +6,5 @@ const { auth } = validateReq;
 
 export const router = express.Router();
 
-router.post('/', controller.signup);
-router.get('/me', auth.isAuthen, controller.findOne);
+router.post('/', controller.createUser);
+router.get('/me', auth.isAuthen, controller.findMe);

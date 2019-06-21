@@ -2,6 +2,7 @@ import Joi from 'joi';
 
 const envVarsSchema = Joi.object({
   NODE_ENV: Joi.string().default('development'),
+  APPNAME_RELEASE: Joi.string().default('0.0.1'),
 })
   .unknown()
   .when(Joi.object({ NODE_ENV: Joi.exist() }), {
@@ -15,6 +16,7 @@ if (error) {
 
 const config = {
   env: envVars.NODE_ENV,
+  release: envVars.APPNAME_RELEASE,
 };
 
 export default config;
