@@ -16,6 +16,18 @@ class InvalidExceptions extends Exceptions {
   }
 }
 
+class UnauthorizedExceptions extends Exceptions {
+  constructor(message) {
+    super(401, message);
+  }
+}
+
+class PermissionExceptions extends Exceptions {
+  constructor(message) {
+    super(403, message);
+  }
+}
+
 class NotFoundExceptions extends Exceptions {
   constructor(message) {
     super(404, message);
@@ -28,4 +40,11 @@ class UnhandledExceptions extends Exceptions {
   }
 }
 
-export { Exceptions, InvalidExceptions, NotFoundExceptions, UnhandledExceptions };
+export {
+  Exceptions,
+  InvalidExceptions,
+  UnauthorizedExceptions,
+  PermissionExceptions,
+  NotFoundExceptions,
+  UnhandledExceptions,
+};

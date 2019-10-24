@@ -26,6 +26,7 @@ let isSentryEnable = false;
 export const init = app => {
   // handle unhandled rejection
   process.on('unhandledRejection', ex => {
+    ex.message = `UNHANDLED REJECTION: ${ex.message}`;
     throw ex;
   });
 

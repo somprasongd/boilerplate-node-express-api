@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+// import mongoSanitize from 'express-mongo-sanitize';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
@@ -32,6 +33,9 @@ export default app => {
   } else {
     app.use(morgan('dev'));
   }
+
+  // Sanitize data
+  // app.use(mongoSanitize());
 
   // Express behind proxies
   app.set('trust proxy', 'loopback');

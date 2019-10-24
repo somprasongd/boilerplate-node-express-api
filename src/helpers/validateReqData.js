@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { invalidExceptionHandler } from './exceptionHandler';
+import { InvalidExceptions } from './exceptions';
 
 const defaultOptions = {
   allowUnknown: true,
@@ -14,5 +14,5 @@ export default (data, schema, options = defaultOptions) => {
 
   const message = error.details.reduce((acc, curr) => `${acc}${acc ? ', ' : ''}${curr.message}`, '');
 
-  invalidExceptionHandler(message);
+  throw new InvalidExceptions(message);
 };

@@ -2,8 +2,8 @@ import 'express-async-errors';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../doc/swagger.json';
 import { apiRouter } from '../api';
-import logger from '../logger';
-import { notFoundExceptionHandler } from '../helpers/exceptionHandler';
+import errorControllerHandler from '../helpers/errorControllerHandler';
+import { NotFoundExceptions } from '../helpers/exceptions.js';
 
 export default app => {
   // home
@@ -24,25 +24,14 @@ export default app => {
     );
   }
 
-  // handle 404
+  // health check
+  app.get('/health', (req, res) => res.status(200).end());
+
+  // handle 404 route
   app.use((req, res, next) => {
-    notFoundExceptionHandler('Invalid route');
+    next(new NotFoundExceptions(`Can not find ${req.originalUrl} on this server!`));
   });
 
   // handle error
-  app.use((error, req, res, next) => {
-    const status = error.status || 500;
-    // Log the exception
-    const message = `${status} - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`;
-    logger.error(new Error(message));
-    if (status === 500 && app.get('env') === 'development') {
-      console.log(error);
-    }
-    return res.status(status).json({
-      error: {
-        status,
-        message: error.message,
-      },
-    });
-  });
+  app.use(errorControllerHandler);
 };
